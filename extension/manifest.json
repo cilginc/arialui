@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "AriaLUI Integration",
+  "version": "1.0",
+  "description": "Download with AriaLUI",
+  "permissions": [
+    "downloads",
+    "activeTab",
+    "contextMenus"
+  ],
+  "host_permissions": [
+    "http://localhost:6801/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "icon.png",
+    "48": "icon.png",
+    "128": "icon.png"
+  }
+}
