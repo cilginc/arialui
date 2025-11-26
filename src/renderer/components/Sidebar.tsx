@@ -44,7 +44,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
 
       <div className="mt-auto pt-4 border-t border-border">
         <div className="px-2 py-2 text-xs text-muted-foreground">
-          Aria2 Status: <span className="text-green-400">Connected</span>
+          Aria2 Status: <span className="text-green-600 dark:text-green-400">Connected</span>
         </div>
       </div>
     </div>

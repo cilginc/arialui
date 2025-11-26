@@ -53,7 +53,7 @@ function App() {
   };
 
   return (
-    <div className="flex h-screen bg-background text-foreground overflow-hidden">
+    <div className="flex h-screen text-foreground overflow-hidden">
       <TitleBar />
 
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />

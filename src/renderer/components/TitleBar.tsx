@@ -7,14 +7,14 @@ export function TitleBar() {
       <div className="flex h-full no-drag">
         <button
           onClick={() => window.electronAPI.minimize()}
-          className="h-full w-12 flex items-center justify-center hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
+          className="h-full w-12 flex items-center justify-center hover:bg-foreground/10 transition-colors text-muted-foreground hover:text-foreground"
           title="Minimize"
         >
           <Minus size={16} />
         </button>
         <button
           onClick={() => window.electronAPI.maximize()}
-          className="h-full w-12 flex items-center justify-center hover:bg-white/10 transition-colors text-muted-foreground hover:text-foreground"
+          className="h-full w-12 flex items-center justify-center hover:bg-foreground/10 transition-colors text-muted-foreground hover:text-foreground"
           title="Maximize"
         >
           <Square size={14} />
