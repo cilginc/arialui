@@ -53,7 +53,7 @@ export interface Aria2Config {
 export interface AppConfig {
   version: number;
   theme: {
-    mode: 'light' | 'dark' | 'system' | 'custom' | 'rose-pine' | 'catppuccin-mocha' | 'tokyo-night' | 'dracula';
+    mode: 'light' | 'dark' | 'system' | 'custom' | string;
     customThemeName?: string;
   };
   aria2: Aria2Config;
@@ -156,7 +156,17 @@ class ConfigManager {
 
   public loadCustomTheme(themeName: string): CustomTheme | null {
     try {
-      const themePath = path.join(this.themesDir, `${themeName}.toml`);
+      // Check user data themes first
+      let themePath = path.join(this.themesDir, `${themeName}.toml`);
+      
+      // If not found, check project themes (dev/bundled)
+      if (!fs.existsSync(themePath)) {
+        // In dev: src/main/../../themes -> themes
+        // In prod: resources/themes (need to handle this if we bundle them)
+        const projectThemes = path.join(__dirname, '../../themes');
+        themePath = path.join(projectThemes, `${themeName}.toml`);
+      }
+
       if (fs.existsSync(themePath)) {
         const fileContent = fs.readFileSync(themePath, 'utf-8');
         return TOML.parse(fileContent) as unknown as CustomTheme;
@@ -170,13 +180,26 @@ class ConfigManager {
 
   public listCustomThemes(): string[] {
     try {
-      if (!fs.existsSync(this.themesDir)) {
-        return [];
+      const themes = new Set<string>();
+
+      // User data themes
+      if (fs.existsSync(this.themesDir)) {
+        const files = fs.readdirSync(this.themesDir);
+        files
+          .filter(file => file.endsWith('.toml'))
+          .forEach(file => themes.add(path.basename(file, '.toml')));
       }
-      const files = fs.readdirSync(this.themesDir);
-      return files
-        .filter(file => file.endsWith('.toml'))
-        .map(file => path.basename(file, '.toml'));
+
+      // Project themes
+      const projectThemes = path.join(__dirname, '../../themes');
+      if (fs.existsSync(projectThemes)) {
+        const files = fs.readdirSync(projectThemes);
+        files
+          .filter(file => file.endsWith('.toml'))
+          .forEach(file => themes.add(path.basename(file, '.toml')));
+      }
+
+      return Array.from(themes);
     } catch (error) {
       console.error('Failed to list custom themes:', error);
       return [];

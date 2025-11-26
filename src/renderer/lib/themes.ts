@@ -1,117 +1,3 @@
-// Built-in theme definitions
-export const BUILT_IN_THEMES = {
-  'rose-pine': {
-    meta: {
-      version: 1,
-      name: 'Rosé Pine',
-      description: 'All natural pine, faux fur and a bit of soho vibes for the classy minimalist',
-      variant: 'dark' as const,
-    },
-    colors: {
-      core: {
-        background: '#191724',
-        foreground: '#e0def4',
-        secondary_background: '#1f1d2e',
-        border: '#26233a',
-        accent: '#ebbcba',
-      },
-      accents: {
-        blue: '#9ccfd8',
-        green: '#31748f',
-        magenta: '#c4a7e7',
-        orange: '#f6c177',
-        purple: '#c4a7e7',
-        red: '#eb6f92',
-        yellow: '#f6c177',
-        cyan: '#9ccfd8',
-      },
-    },
-  },
-  'catppuccin-mocha': {
-    meta: {
-      version: 1,
-      name: 'Catppuccin Mocha',
-      description: 'Soothing pastel theme for the high-spirited',
-      variant: 'dark' as const,
-    },
-    colors: {
-      core: {
-        background: '#1e1e2e',
-        foreground: '#cdd6f4',
-        secondary_background: '#181825',
-        border: '#313244',
-        accent: '#89b4fa',
-      },
-      accents: {
-        blue: '#89b4fa',
-        green: '#a6e3a1',
-        magenta: '#cba6f7',
-        orange: '#fab387',
-        purple: '#cba6f7',
-        red: '#f38ba8',
-        yellow: '#f9e2af',
-        cyan: '#89dceb',
-      },
-    },
-  },
-  'tokyo-night': {
-    meta: {
-      version: 1,
-      name: 'Tokyo Night',
-      description: 'A clean, dark theme that celebrates the lights of downtown Tokyo at night',
-      variant: 'dark' as const,
-    },
-    colors: {
-      core: {
-        background: '#1a1b26',
-        foreground: '#c0caf5',
-        secondary_background: '#16161e',
-        border: '#414868',
-        accent: '#7aa2f7',
-      },
-      accents: {
-        blue: '#7aa2f7',
-        green: '#9ece6a',
-        magenta: '#bb9af7',
-        orange: '#ff9e64',
-        purple: '#9d7cd8',
-        red: '#f7768e',
-        yellow: '#e0af68',
-        cyan: '#7dcfff',
-      },
-    },
-  },
-  'dracula': {
-    meta: {
-      version: 1,
-      name: 'Dracula',
-      description: 'The popular Dracula theme',
-      variant: 'dark' as const,
-    },
-    colors: {
-      core: {
-        background: '#282A36',
-        foreground: '#F8F8F2',
-        secondary_background: '#21222C',
-        border: '#44475A',
-        accent: '#8BE9FD',
-      },
-      accents: {
-        blue: '#8BE9FD',
-        green: '#50FA7B',
-        magenta: '#FF79C6',
-        orange: '#FFB86C',
-        purple: '#BD93F9',
-        red: '#FF5555',
-        yellow: '#F1FA8C',
-        cyan: '#8BE9FD',
-      },
-    },
-  },
-};
-
-export type BuiltInThemeName = keyof typeof BUILT_IN_THEMES;
-
 export interface CustomTheme {
   meta: {
     version: number;
@@ -255,9 +141,8 @@ function getContrastingForeground(backgroundHSL: string, darkColor: string, ligh
   return isLightColor(backgroundHSL) ? darkColor : lightColor;
 }
 
-
 // Apply theme to CSS variables
-export function applyTheme(theme: CustomTheme | typeof BUILT_IN_THEMES[BuiltInThemeName]): void {
+export function applyTheme(theme: CustomTheme): void {
   const root = document.documentElement;
 
   // Convert all colors first
@@ -311,14 +196,4 @@ export function applyTheme(theme: CustomTheme | typeof BUILT_IN_THEMES[BuiltInTh
   // Set theme variant class
   root.classList.remove('light', 'dark');
   root.classList.add(theme.meta.variant);
-}
-
-
-
-export function getBuiltInTheme(name: BuiltInThemeName): typeof BUILT_IN_THEMES[BuiltInThemeName] {
-  return BUILT_IN_THEMES[name];
-}
-
-export function isBuiltInTheme(name: string): name is BuiltInThemeName {
-  return name in BUILT_IN_THEMES;
 }

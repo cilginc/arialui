@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
-import { applyTheme, getBuiltInTheme, isBuiltInTheme, clearCustomTheme, type BuiltInThemeName } from "@/lib/themes"
+import { applyTheme, clearCustomTheme } from "@/lib/themes"
 import type { AppConfig } from "../../main/config"
 
-type Theme = "dark" | "light" | "system" | BuiltInThemeName | "custom"
+type Theme = "dark" | "light" | "system" | "custom" | string
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -61,17 +61,30 @@ export function ThemeProvider({
     root.classList.remove("light", "dark")
 
     const applyThemeClass = async () => {
-      // Handle built-in custom themes (rose-pine, catppuccin, etc.)
-      if (isBuiltInTheme(theme)) {
-        const builtInTheme = getBuiltInTheme(theme as BuiltInThemeName)
-        applyTheme(builtInTheme)
+      // Handle light/dark/system
+      if (theme === "system") {
+        clearCustomTheme()
+        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+          .matches
+          ? "dark"
+          : "light"
+        root.classList.add(systemTheme)
         return
       }
 
-      // Handle custom theme from file
-      if (theme === "custom" && customThemeName) {
+      if (theme === "light" || theme === "dark") {
+        clearCustomTheme()
+        root.classList.add(theme)
+        return
+      }
+
+      // Handle custom themes (including previously built-in ones)
+      // If theme is "custom", use customThemeName. Otherwise use theme as the name.
+      const themeName = theme === "custom" ? customThemeName : theme;
+      
+      if (themeName) {
         try {
-          const customTheme = await window.electronAPI.loadCustomTheme(customThemeName)
+          const customTheme = await window.electronAPI.loadCustomTheme(themeName)
           if (customTheme) {
             applyTheme(customTheme)
             return
@@ -81,23 +94,9 @@ export function ThemeProvider({
         }
       }
 
-      // For light/dark/system, clear custom theme styles and use CSS classes
+      // Fallback to dark if theme loading fails
       clearCustomTheme()
-
-      // Handle light/dark/system
-      if (theme === "system") {
-        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-          .matches
-          ? "dark"
-          : "light"
-        root.classList.add(systemTheme)
-        return
-      }
-
-      // Add simple theme class (light or dark)
-      if (theme === "light" || theme === "dark") {
-        root.classList.add(theme)
-      }
+      root.classList.add('dark')
     }
 
     applyThemeClass()

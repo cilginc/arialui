@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useTheme } from './ThemeProvider';
 import type { AppConfig } from '../../main/config';
-import { BUILT_IN_THEMES } from '@/lib/themes';
 import { Check } from 'lucide-react';
 
 export function SettingsPage() {
@@ -20,6 +19,8 @@ export function SettingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
+  const [customThemes, setCustomThemes] = useState<string[]>([]);
+
   useEffect(() => {
     const loadConfig = async () => {
       try {
@@ -31,6 +32,10 @@ export function SettingsPage() {
         setAria2MaxConnections(cfg.aria2.maxConnectionPerServer.toString());
         setAria2MaxConcurrent(cfg.aria2.maxConcurrentDownloads.toString());
         setDownloadDirectory(cfg.general.downloadDirectory);
+
+        // Load custom themes
+        const themes = await window.electronAPI.getCustomThemes();
+        setCustomThemes(themes);
       } catch (error) {
         console.error('Failed to load config:', error);
       }
@@ -76,10 +81,10 @@ export function SettingsPage() {
     { value: 'light', label: 'Light' },
     { value: 'dark', label: 'Dark' },
     { value: 'system', label: 'System' },
-    { value: 'rose-pine', label: 'Rosé Pine' },
-    { value: 'catppuccin-mocha', label: 'Catppuccin Mocha' },
-    { value: 'tokyo-night', label: 'Tokyo Night' },
-    { value: 'dracula', label: 'Dracula' },
+    ...customThemes.map(name => ({
+      value: name,
+      label: name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+    }))
   ];
 
   return (

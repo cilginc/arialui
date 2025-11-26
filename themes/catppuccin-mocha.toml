@@ -1,0 +1,22 @@
+[meta]
+version = 1
+name = "Catppuccin Mocha"
+description = "Soothing pastel theme for the high-spirited"
+variant = "dark"
+
+[colors.core]
+background = "#1e1e2e"
+foreground = "#cdd6f4"
+secondary_background = "#181825"
+border = "#313244"
+accent = "#89b4fa"
+
+[colors.accents]
+blue = "#89b4fa"
+green = "#a6e3a1"
+magenta = "#cba6f7"
+orange = "#fab387"
+purple = "#cba6f7"
+red = "#f38ba8"
+yellow = "#f9e2af"
+cyan = "#89dceb"
