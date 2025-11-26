@@ -1,8 +1,12 @@
 const { FusesPlugin } = require('@electron-forge/plugin-fuses');
 const { FuseV1Options, FuseVersion } = require('@electron/fuses');
+const path = require('path');
 
 module.exports = {
   packagerConfig: {
+    name: 'AriaLUI',
+    executableName: 'AriaLUI',
+    icon: path.resolve(__dirname, 'resources/icon.ico'),
     asar: true,
     ignore: [
       /^\/src/,           // Ignore source files
@@ -11,12 +15,24 @@ module.exports = {
       /\.tsx?$/,          // Ignore TypeScript source files
       /^\/tsconfig.*\.json$/,
     ],
+    win32metadata: {
+      CompanyName: 'cilginc',
+      FileDescription: 'AriaLUI Download Manager',
+      OriginalFilename: 'AriaLUI.exe',
+      ProductName: 'AriaLUI',
+      InternalName: 'AriaLUI',
+      icon: path.resolve(__dirname, 'resources/icon.ico'),
+    },
   },
   rebuildConfig: {},
   makers: [
     {
       name: '@electron-forge/maker-squirrel',
-      config: {},
+      config: {
+        setupIcon: path.resolve(__dirname, 'resources/icon.ico'),
+        authors: 'cilginc',
+        description: 'An IDM like Download Manager with Different Backends support',
+      },
     },
     {
       name: '@electron-forge/maker-zip',

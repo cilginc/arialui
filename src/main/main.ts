@@ -1,4 +1,5 @@
 import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, Notification } from 'electron';
+if (require('electron-squirrel-startup')) app.quit();
 import path from 'path';
 import http from 'http';
 import { startAria2, stopAria2, getAria2Config } from './aria2';
@@ -59,7 +60,7 @@ function startExtensionServer() {
 }
 
 function createTray() {
-  const iconPath = path.join(__dirname, '../../public/vite.svg');
+  const iconPath = path.join(__dirname, '../../resources/icon.png');
 
   try {
     const icon = nativeImage.createFromPath(iconPath);
@@ -95,7 +96,7 @@ function createWindow() {
     frame: false,
     titleBarStyle: 'hidden',
     backgroundColor: '#1e1e1e',
-    icon: path.join(__dirname, '../../public/vite.svg')
+    icon: path.join(__dirname, '../../resources/icon.png')
   });
 
   if (process.env.NODE_ENV === 'development') {
