@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
+import { applyTheme, getBuiltInTheme, isBuiltInTheme, clearCustomTheme, type BuiltInThemeName } from "@/lib/themes"
+import type { AppConfig } from "../../main/config"
 
-type Theme = "dark" | "light" | "system"
+type Theme = "dark" | "light" | "system" | BuiltInThemeName | "custom"
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -11,10 +13,11 @@ type ThemeProviderProps = {
 type ThemeProviderState = {
   theme: Theme
   setTheme: (theme: Theme) => void
+  customThemeName?: string
 }
 
 const initialState: ThemeProviderState = {
-  theme: "system",
+  theme: "dark",
   setTheme: () => null,
 }
 
@@ -22,38 +25,104 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
 export function ThemeProvider({
   children,
-  defaultTheme = "dark", // Default to dark as per existing design
+  defaultTheme = "dark",
   storageKey = "arialui-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  )
+  const [theme, setThemeState] = useState<Theme>(defaultTheme)
+  const [customThemeName, setCustomThemeName] = useState<string | undefined>()
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Load configuration on mount
+  useEffect(() => {
+    const loadConfig = async () => {
+      try {
+        const config = await window.electronAPI.getConfig()
+        const configTheme = config.theme.mode
+        setThemeState(configTheme)
+        if (configTheme === 'custom') {
+          setCustomThemeName(config.theme.customThemeName)
+        }
+        setIsInitialized(true)
+      } catch (error) {
+        console.error('Failed to load theme config:', error)
+        setIsInitialized(true)
+      }
+    }
+    loadConfig()
+  }, [])
 
   useEffect(() => {
+    if (!isInitialized) return
+
     const root = window.document.documentElement
 
+    // Remove all theme classes
     root.classList.remove("light", "dark")
 
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light"
+    const applyThemeClass = async () => {
+      // Handle built-in custom themes (rose-pine, catppuccin, etc.)
+      if (isBuiltInTheme(theme)) {
+        const builtInTheme = getBuiltInTheme(theme as BuiltInThemeName)
+        applyTheme(builtInTheme)
+        return
+      }
 
-      root.classList.add(systemTheme)
-      return
+      // Handle custom theme from file
+      if (theme === "custom" && customThemeName) {
+        try {
+          const customTheme = await window.electronAPI.loadCustomTheme(customThemeName)
+          if (customTheme) {
+            applyTheme(customTheme)
+            return
+          }
+        } catch (error) {
+          console.error('Failed to load custom theme:', error)
+        }
+      }
+
+      // For light/dark/system, clear custom theme styles and use CSS classes
+      clearCustomTheme()
+
+      // Handle light/dark/system
+      if (theme === "system") {
+        const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+          .matches
+          ? "dark"
+          : "light"
+        root.classList.add(systemTheme)
+        return
+      }
+
+      // Add simple theme class (light or dark)
+      if (theme === "light" || theme === "dark") {
+        root.classList.add(theme)
+      }
     }
 
-    root.classList.add(theme)
-  }, [theme])
+    applyThemeClass()
+  }, [theme, customThemeName, isInitialized])
+
+  const setTheme = async (newTheme: Theme) => {
+    setThemeState(newTheme)
+    
+    // Save to configuration
+    try {
+      await window.electronAPI.updateConfig({
+        theme: {
+          mode: newTheme,
+          customThemeName: newTheme === 'custom' ? customThemeName : undefined,
+        },
+      })
+    } catch (error) {
+      console.error('Failed to save theme config:', error)
+    }
+  }
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme)
-      setTheme(theme)
-    },
+    setTheme,
+    customThemeName,
   }
 
   return (

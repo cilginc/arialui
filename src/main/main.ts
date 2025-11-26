@@ -2,6 +2,7 @@ import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, Notification } fr
 import path from 'path';
 import http from 'http';
 import { startAria2, stopAria2, getAria2Config } from './aria2';
+import { initializeConfig, getConfigManager } from './config';
 
 let tray: Tray | null = null;
 let mainWindow: BrowserWindow | null = null;
@@ -117,9 +118,36 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(() => {
+app.whenReady().then(async () => {
+  // Initialize configuration
+  await initializeConfig();
+  
   startAria2();
   startExtensionServer();
+
+  // Configuration IPC handlers
+  ipcMain.handle('get-config', () => {
+    return getConfigManager().getConfig();
+  });
+
+  ipcMain.handle('update-config', async (_event, updates) => {
+    const configManager = getConfigManager();
+    configManager.updateConfig(updates);
+    await configManager.save();
+    return configManager.getConfig();
+  });
+
+  ipcMain.handle('get-custom-themes', () => {
+    return getConfigManager().listCustomThemes();
+  });
+
+  ipcMain.handle('load-custom-theme', (_event, themeName: string) => {
+    return getConfigManager().loadCustomTheme(themeName);
+  });
+
+  ipcMain.handle('get-themes-directory', () => {
+    return getConfigManager().getThemesDirectory();
+  });
 
   ipcMain.handle('get-aria2-config', () => {
     return getAria2Config();

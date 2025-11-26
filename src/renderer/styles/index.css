@@ -122,27 +122,21 @@ body {
 
 /* Glassmorphism Utilities */
 .glass {
-  background: rgba(30, 41, 59, 0.7);
+  background: hsl(var(--secondary) / 0.5);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid hsl(var(--border) / 0.5);
 }
 
 .glass-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+  background: hsl(var(--card) / 0.95);
   backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid hsl(var(--border) / 0.3);
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
 }
 
 /* Light mode overrides for glass effects */
-.light .glass {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-}
-
 .light .glass-card {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.5) 100%);
-  border: 1px solid rgba(0, 0, 0, 0.05);
   box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.1);
 }
+

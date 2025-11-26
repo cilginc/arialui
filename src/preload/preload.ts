@@ -7,5 +7,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   minimize: () => ipcRenderer.send('window-minimize'),
   maximize: () => ipcRenderer.send('window-maximize'),
-  close: () => ipcRenderer.send('window-close')
+  close: () => ipcRenderer.send('window-close'),
+  // Configuration methods
+  getConfig: () => ipcRenderer.invoke('get-config'),
+  updateConfig: (updates: any) => ipcRenderer.invoke('update-config', updates),
+  getCustomThemes: () => ipcRenderer.invoke('get-custom-themes'),
+  loadCustomTheme: (themeName: string) => ipcRenderer.invoke('load-custom-theme', themeName),
+  getThemesDirectory: () => ipcRenderer.invoke('get-themes-directory'),
 });

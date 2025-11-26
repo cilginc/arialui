@@ -1,22 +1,12 @@
-# Arialui
-
-Arialui is a simple and modern UI for Aria2.
-
-## Example Configuration File for AriaLUI
-
-```toml
+# Example Configuration File for AriaLUI
 # This file demonstrates all available configuration options
 
 version = 1
 
 [theme]
-
 # Theme mode can be: 'light', 'dark', 'system', 'rose-pine', 'catppuccin-mocha', 'tokyo-night', 'dracula', or 'custom'
-
 mode = "dark"
-
 # If mode is 'custom', specify the custom theme file name (without .toml extension)
-
 # customThemeName = "my-custom-theme"
 
 [aria2]
@@ -28,10 +18,9 @@ maxConcurrentDownloads = 5
 maxConnectionPerServer = 5
 minSplitSize = "10M"
 split = 5
-downloadDir = "C:\\Users\\YourUser\\Downloads" # Windows path example
+downloadDir = "C:\\Users\\YourUser\\Downloads"  # Windows path example
 
 [general]
 downloadDirectory = "C:\\Users\\YourUser\\Downloads"
 startMinimized = false
 closeToTray = true
-```

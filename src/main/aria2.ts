@@ -1,25 +1,32 @@
 import { spawn, ChildProcess } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import { getConfigManager } from './config';
 
 let aria2Process: ChildProcess | null = null;
-const ARIA2_PORT = 6800;
-const ARIA2_SECRET = 'arialui_secret_token'; // Should be generated or configurable
 
 export function startAria2() {
+  const config = getConfigManager().getConfig();
+  const aria2Config = config.aria2;
+
   // Check if aria2c is in PATH or bundled
   const aria2Path = 'aria2c'; // Assuming in PATH for now as per user request
 
   // Arguments for aria2c
   const args = [
     '--enable-rpc',
-    `--rpc-listen-port=${ARIA2_PORT}`,
-    '--rpc-listen-all=false', // Only local
-    '--rpc-allow-origin-all', // For development/extension
-    `--rpc-secret=${ARIA2_SECRET}`,
+    `--rpc-listen-port=${aria2Config.port}`,
+    `--rpc-listen-all=${aria2Config.rpcListenAll}`,
+    aria2Config.rpcAllowOriginAll ? '--rpc-allow-origin-all' : '',
+    `--rpc-secret=${aria2Config.secret}`,
+    `--dir=${aria2Config.downloadDir}`,
+    `--max-concurrent-downloads=${aria2Config.maxConcurrentDownloads}`,
+    `--max-connection-per-server=${aria2Config.maxConnectionPerServer}`,
+    `--min-split-size=${aria2Config.minSplitSize}`,
+    `--split=${aria2Config.split}`,
     '--quiet=true', // Less output
     // '--no-conf', // Ignore default conf
-  ];
+  ].filter(arg => arg !== ''); // Remove empty args
 
   console.log(`Spawning aria2c: ${aria2Path} ${args.join(' ')}`);
 
@@ -51,8 +58,10 @@ export function stopAria2() {
 }
 
 export function getAria2Config() {
+  const config = getConfigManager().getConfig();
   return {
-    port: ARIA2_PORT,
-    secret: ARIA2_SECRET,
+    port: config.aria2.port,
+    secret: config.aria2.secret,
   };
 }
+
