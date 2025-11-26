@@ -7,6 +7,8 @@ import { AddDownloadDialog } from './components/AddDownloadDialog';
 import { Button } from './components/ui/button';
 import { Plus } from 'lucide-react';
 
+import { TitleBar } from './components/TitleBar';
+
 function App() {
   const [activeTab, setActiveTab] = useState('all');
   const [version, setVersion] = useState<string>('');
@@ -52,7 +54,7 @@ function App() {
 
   return (
     <div className="flex h-screen bg-background text-foreground overflow-hidden">
-      <div className="fixed top-0 left-0 right-0 h-8 drag-region z-50" />
+      <TitleBar />
 
       <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
 

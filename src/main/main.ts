@@ -125,6 +125,22 @@ app.whenReady().then(() => {
     return getAria2Config();
   });
 
+  ipcMain.on('window-minimize', () => {
+    mainWindow?.hide();
+  });
+
+  ipcMain.on('window-maximize', () => {
+    if (mainWindow?.isMaximized()) {
+      mainWindow.unmaximize();
+    } else {
+      mainWindow?.maximize();
+    }
+  });
+
+  ipcMain.on('window-close', () => {
+    mainWindow?.close();
+  });
+
   createWindow();
   createTray();
 
