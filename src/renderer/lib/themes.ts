@@ -281,7 +281,7 @@ export function applyTheme(theme: CustomTheme | typeof BUILT_IN_THEMES[BuiltInTh
   root.style.setProperty('--primary-foreground', primaryFg);
 
   // Secondary - slightly different from background
-  root.style.setProperty('--secondary', borderHSL);
+  root.style.setProperty('--secondary', secondaryBgHSL);
   root.style.setProperty('--secondary-foreground', fgHSL);
 
   // Card - use secondary background for depth

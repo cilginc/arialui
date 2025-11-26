@@ -108,9 +108,7 @@ body {
 }
 
 /* Specific background styles for dark mode */
-.dark body {
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-}
+/* Specific background styles for dark mode removed to allow custom themes to control background */
 
 .drag-region {
   -webkit-app-region: drag;
