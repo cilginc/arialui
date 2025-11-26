@@ -1,24 +1,27 @@
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Pause, Play, X } from 'lucide-react';
+import { Pause, Play, X, Trash2 } from 'lucide-react';
+import { DownloadItem } from '../hooks/useDownloads';
 
-// Mock type for now
-interface DownloadItem {
-  gid: string;
-  name: string;
-  status: 'active' | 'waiting' | 'paused' | 'complete' | 'error';
-  progress: number;
-  speed: string;
-  size: string;
+interface DownloadListProps {
+  downloads: DownloadItem[];
+  onPause: (gid: string) => void;
+  onResume: (gid: string) => void;
+  onRemove: (gid: string, status: string) => void;
 }
 
-export function DownloadList() {
-  const downloads: DownloadItem[] = [
-    { gid: '1', name: 'ubuntu-22.04-desktop-amd64.iso', status: 'active', progress: 45, speed: '2.5 MB/s', size: '3.4 GB' },
-    { gid: '2', name: 'movie_4k_hdr.mkv', status: 'paused', progress: 12, speed: '0 B/s', size: '14.2 GB' },
-    { gid: '3', name: 'archive.zip', status: 'complete', progress: 100, speed: '0 B/s', size: '150 MB' },
-  ];
+export function DownloadList({ downloads, onPause, onResume, onRemove }: DownloadListProps) {
+  if (downloads.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center text-muted-foreground">
+        <div className="text-center">
+          <p className="text-lg font-medium">No downloads found</p>
+          <p className="text-sm">Add a download to get started</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 p-6 space-y-4 overflow-y-auto">
@@ -28,34 +31,52 @@ export function DownloadList() {
             <div className="flex-1 min-w-0">
               <div className="flex justify-between mb-1">
                 <h3 className="font-medium truncate" title={item.name}>{item.name}</h3>
-                <span className="text-xs text-muted-foreground">{item.status}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${
+                  item.status === 'active' ? 'bg-primary/20 text-primary' :
+                  item.status === 'error' ? 'bg-destructive/20 text-destructive' :
+                  item.status === 'complete' ? 'bg-green-500/20 text-green-500' :
+                  item.status === 'paused' ? 'bg-yellow-500/20 text-yellow-500' :
+                  'bg-secondary text-muted-foreground'
+                }`}>
+                  {item.status}
+                </span>
               </div>
 
               <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-primary transition-all duration-500"
+                  className={`h-full transition-all duration-500 ${
+                    item.status === 'error' ? 'bg-destructive' :
+                    item.status === 'complete' ? 'bg-green-500' :
+                    'bg-primary'
+                  }`}
                   style={{ width: `${item.progress}%` }}
                 />
               </div>
 
               <div className="flex justify-between mt-2 text-xs text-muted-foreground">
                 <span>{item.size} • {item.speed}</span>
-                <span>{item.progress}%</span>
+                <span>{item.progress.toFixed(1)}%</span>
               </div>
             </div>
 
             <div className="flex gap-2">
-              {item.status === 'active' ? (
-                <Button size="icon" variant="ghost" className="h-8 w-8">
+              {item.status === 'active' && (
+                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => onPause(item.gid)}>
                   <Pause size={16} />
                 </Button>
-              ) : (
-                <Button size="icon" variant="ghost" className="h-8 w-8">
+              )}
+              {item.status === 'paused' && (
+                <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => onResume(item.gid)}>
                   <Play size={16} />
                 </Button>
               )}
-              <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive hover:text-destructive">
-                <X size={16} />
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                onClick={() => onRemove(item.gid, item.status)}
+              >
+                {item.status === 'complete' || item.status === 'error' ? <Trash2 size={16} /> : <X size={16} />}
               </Button>
             </div>
           </CardContent>

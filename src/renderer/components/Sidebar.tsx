@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, Settings, List, CheckCircle, Clock, Trash2 } from 'lucide-react';
+import { Download, Settings, List, CheckCircle, Clock, Trash2, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -14,6 +14,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     { id: 'active', label: 'Active', icon: Download },
     { id: 'waiting', label: 'Waiting', icon: Clock },
     { id: 'stopped', label: 'Completed', icon: CheckCircle },
+    { id: 'failed', label: 'Failed', icon: XCircle },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
 

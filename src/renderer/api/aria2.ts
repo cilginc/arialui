@@ -55,4 +55,28 @@ export class Aria2Client {
   async tellStopped(offset: number, num: number) {
     return this.call('tellStopped', [offset, num]);
   }
+
+  async pause(gid: string) {
+    return this.call('pause', [gid]);
+  }
+
+  async unpause(gid: string) {
+    return this.call('unpause', [gid]);
+  }
+
+  async remove(gid: string) {
+    return this.call('remove', [gid]);
+  }
+
+  async forceRemove(gid: string) {
+    return this.call('forceRemove', [gid]);
+  }
+
+  async removeDownloadResult(gid: string) {
+    return this.call('removeDownloadResult', [gid]);
+  }
+
+  async getGlobalStat() {
+    return this.call('getGlobalStat');
+  }
 }
