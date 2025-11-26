@@ -13,12 +13,19 @@ function startExtensionServer() {
   const server = http.createServer((req, res) => {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
     if (req.method === 'OPTIONS') {
       res.writeHead(200);
       res.end();
+      return;
+    }
+
+    // Health check endpoint for extension
+    if (req.method === 'GET' && req.url === '/ping') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ status: 'ok', app: 'AriaLUI' }));
       return;
     }
 
@@ -33,8 +40,12 @@ function startExtensionServer() {
           if (data.url) {
             // Show window if hidden
             mainWindow?.show();
-            // Send to renderer to open dialog
-            mainWindow?.webContents.send('show-add-download-dialog', data.url);
+            // Send to renderer to open dialog with URL
+            mainWindow?.webContents.send('show-add-download-dialog', {
+              url: data.url,
+              filename: data.filename,
+              referrer: data.referrer
+            });
 
             new Notification({
               title: 'AriaLUI',
@@ -44,7 +55,8 @@ function startExtensionServer() {
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ success: true }));
         } catch (e) {
-          res.writeHead(400);
+          console.error('Error processing download request:', e);
+          res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: 'Invalid JSON' }));
         }
       });

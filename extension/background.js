@@ -1,49 +1,133 @@
+// Default settings
+const DEFAULT_SETTINGS = {
+  autoIntercept: true,
+  serverUrl: 'http://localhost:6801'
+};
+
+// Initialize extension
 chrome.runtime.onInstalled.addListener(() => {
+  // Create context menu
   chrome.contextMenus.create({
     id: "download-with-arialui",
     title: "Download with AriaLUI",
     contexts: ["link", "image", "video", "audio"]
   });
+
+  // Initialize settings
+  chrome.storage.sync.get(['settings'], (result) => {
+    if (!result.settings) {
+      chrome.storage.sync.set({ settings: DEFAULT_SETTINGS });
+    }
+  });
 });
 
+// Handle context menu clicks
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "download-with-arialui") {
     const url = info.linkUrl || info.srcUrl;
     if (url) {
-      sendToAriaLUI(url, tab?.title);
+      sendToAriaLUI(url, info.pageUrl, tab?.title);
     }
   }
 });
 
-// Intercept downloads
-// Note: This is aggressive. Usually IDM asks or we can toggle it.
-// For now, we'll just add the context menu as primary, and maybe intercept all if enabled.
-// The user said "catch the download requests".
-chrome.downloads.onCreated.addListener((downloadItem) => {
-  // We can cancel this download and send to AriaLUI
-  // But we need to be careful not to loop if AriaLUI uses the browser stack (it doesn't, it uses aria2)
+// Intercept downloads automatically if enabled
+chrome.downloads.onCreated.addListener(async (downloadItem) => {
+  const { settings } = await chrome.storage.sync.get(['settings']);
+  const autoIntercept = settings?.autoIntercept ?? DEFAULT_SETTINGS.autoIntercept;
 
-  // Simple logic: If it's a large file or we want to intercept everything.
-  // For this MVP, let's stick to Context Menu to avoid breaking normal browsing, 
-  // OR prompt the user.
-  // User request: "catch the download requests and forward it".
+  if (!autoIntercept) {
+    return; // User disabled auto-intercept
+  }
 
-  // To do this properly in V3 without blocking (which is hard in V3), we often use onDeterminingFilename
-  // but cancelling is tricky.
-  // Let's stick to Context Menu for safety in this iteration, or try to send it.
+  // Don't intercept if it's a very small file (likely a webpage/html)
+  // or if we don't have a URL
+  if (!downloadItem.url || downloadItem.url.startsWith('data:')) {
+    return;
+  }
 
-  // Actually, let's implement the Context Menu first as it's safer.
+  try {
+    // Cancel the browser download
+    chrome.downloads.cancel(downloadItem.id, () => {
+      chrome.downloads.erase({ id: downloadItem.id });
+    });
+
+    // Send to AriaLUI
+    const success = await sendToAriaLUI(
+      downloadItem.url,
+      downloadItem.referrer,
+      downloadItem.filename
+    );
+
+    if (success) {
+      chrome.notifications.create({
+        type: 'basic',
+        iconUrl: 'icon.png',
+        title: 'AriaLUI',
+        message: 'Download sent to AriaLUI',
+        priority: 1
+      });
+    }
+  } catch (e) {
+    console.error('Failed to intercept download:', e);
+  }
 });
 
-async function sendToAriaLUI(url, filename) {
+// Send download to AriaLUI
+async function sendToAriaLUI(url, referrer, filename) {
   try {
-    await fetch('http://localhost:6801/add-download', {
+    const { settings } = await chrome.storage.sync.get(['settings']);
+    const serverUrl = settings?.serverUrl ?? DEFAULT_SETTINGS.serverUrl;
+
+    const response = await fetch(`${serverUrl}/add-download`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, filename })
+      body: JSON.stringify({ url, referrer, filename })
     });
-    console.log('Sent to AriaLUI');
+
+    if (!response.ok) {
+      throw new Error(`Server responded with ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Sent to AriaLUI:', data);
+    return true;
   } catch (e) {
-    console.error('Failed to send to AriaLUI', e);
+    console.error('Failed to send to AriaLUI:', e);
+    
+    // Show error notification
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: 'icon.png',
+      title: 'AriaLUI Connection Error',
+      message: 'Could not connect to AriaLUI. Make sure the application is running.',
+      priority: 2
+    });
+    
+    return false;
   }
 }
+
+// Check if AriaLUI is running
+async function checkConnection() {
+  try {
+    const { settings } = await chrome.storage.sync.get(['settings']);
+    const serverUrl = settings?.serverUrl ?? DEFAULT_SETTINGS.serverUrl;
+
+    const response = await fetch(`${serverUrl}/ping`, {
+      method: 'GET'
+    });
+
+    return response.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+// Handle messages from popup
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === 'checkConnection') {
+    checkConnection().then(sendResponse);
+    return true; // Will respond asynchronously
+  }
+});

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,10 +8,41 @@ interface AddDownloadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onAdd: (url: string) => void;
+  initialUrl?: string;
+  autoSubmit?: boolean;
 }
 
-export function AddDownloadDialog({ open, onOpenChange, onAdd }: AddDownloadDialogProps) {
+export function AddDownloadDialog({ open, onOpenChange, onAdd, initialUrl = '', autoSubmit = false }: AddDownloadDialogProps) {
   const [url, setUrl] = useState('');
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
+
+  // Update URL when initialUrl changes
+  useEffect(() => {
+    if (initialUrl) {
+      setUrl(initialUrl);
+    }
+  }, [initialUrl]);
+
+  // Auto-submit when URL is pre-filled and autoSubmit is true
+  useEffect(() => {
+    if (open && initialUrl && autoSubmit) {
+      // Small delay to ensure dialog is fully rendered
+      setTimeout(() => {
+        onAdd(initialUrl);
+        setUrl('');
+        onOpenChange(false);
+      }, 300);
+    }
+  }, [open, initialUrl, autoSubmit, onAdd, onOpenChange]);
+
+  // Focus submit button when URL is pre-filled (but not auto-submitting)
+  useEffect(() => {
+    if (open && initialUrl && !autoSubmit && submitButtonRef.current) {
+      setTimeout(() => {
+        submitButtonRef.current?.focus();
+      }, 100);
+    }
+  }, [open, initialUrl, autoSubmit]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,11 +68,11 @@ export function AddDownloadDialog({ open, onOpenChange, onAdd }: AddDownloadDial
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               className="col-span-3 bg-secondary/50 border-border"
-              autoFocus
+              autoFocus={!initialUrl}
             />
           </div>
           <DialogFooter>
-            <Button type="submit">Start Download</Button>
+            <Button type="submit" ref={submitButtonRef}>Start Download</Button>
           </DialogFooter>
         </form>
       </DialogContent>

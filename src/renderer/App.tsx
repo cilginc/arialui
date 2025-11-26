@@ -14,6 +14,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('all');
   const [version, setVersion] = useState<string>('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [initialUrl, setInitialUrl] = useState<string>('');
   const [client, setClient] = useState<Aria2Client | null>(null);
 
   const { downloads, refresh, pauseDownload, resumeDownload, removeDownload } = useDownloads(client);
@@ -32,9 +33,10 @@ function App() {
     };
     initAria2();
 
-    window.electronAPI.onShowAddDownloadDialog((url) => {
+    window.electronAPI.onShowAddDownloadDialog((data) => {
+      setInitialUrl(data.url);
       setIsAddDialogOpen(true);
-      console.log('Received URL from extension:', url);
+      console.log('Received download from extension:', data);
     });
   }, []);
 
@@ -96,8 +98,13 @@ function App() {
 
       <AddDownloadDialog
         open={isAddDialogOpen}
-        onOpenChange={setIsAddDialogOpen}
+        onOpenChange={(open) => {
+          setIsAddDialogOpen(open);
+          if (!open) setInitialUrl(''); // Clear initial URL when dialog closes
+        }}
         onAdd={handleAddDownload}
+        initialUrl={initialUrl}
+        autoSubmit={!!initialUrl} // Auto-submit when URL comes from extension
       />
     </div>
   );
