@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 // Setup event listeners
 function setupEventListeners() {
   const autoInterceptToggle = document.getElementById('autoIntercept');
+  const autoStartToggle = document.getElementById('autoStart');
   const refreshButton = document.getElementById('refreshStatus');
 
   autoInterceptToggle?.addEventListener('change', async (e) => {
@@ -19,6 +20,16 @@ function setupEventListeners() {
     const newSettings = {
       ...settings,
       autoIntercept: e.target.checked
+    };
+    await chrome.storage.sync.set({ settings: newSettings });
+    showMessage('Settings saved!', 'success');
+  });
+
+  autoStartToggle?.addEventListener('change', async (e) => {
+    const { settings } = await chrome.storage.sync.get(['settings']);
+    const newSettings = {
+      ...settings,
+      autoStart: e.target.checked
     };
     await chrome.storage.sync.set({ settings: newSettings });
     showMessage('Settings saved!', 'success');
@@ -33,9 +44,14 @@ function setupEventListeners() {
 async function loadSettings() {
   const { settings } = await chrome.storage.sync.get(['settings']);
   const autoInterceptToggle = document.getElementById('autoIntercept');
+  const autoStartToggle = document.getElementById('autoStart');
   
   if (autoInterceptToggle) {
     autoInterceptToggle.checked = settings?.autoIntercept ?? true;
+  }
+  
+  if (autoStartToggle) {
+    autoStartToggle.checked = settings?.autoStart ?? false;
   }
 }
 

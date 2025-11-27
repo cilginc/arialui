@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Confirm Download</title>
+  <link rel="icon" type="image/png" href="icons/icon-48.png">
+  <link rel="stylesheet" href="confirm_popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">
+        <img src="icons/icon-48.png" alt="AriaLUI" class="logo-img">
+        <h1>AriaLUI</h1>
+      </div>
+    </div>
+
+    <div class="content">
+      <p class="title">Do you want to install this file?</p>
+      
+      <div class="file-info">
+        <div class="url-container">
+          <span class="label">URL:</span>
+          <div class="url-text" id="download-url">Loading...</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <label for="backend-select">Backend:</label>
+        <div class="select-wrapper">
+          <select id="backend-select" class="select-input">
+            <option value="aria2">Aria2 (Default)</option>
+            <option value="curl">cURL</option>
+            <option value="wget">Wget</option>
+          </select>
+          <svg class="select-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="btn-install" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+          Install
+        </button>
+        <button id="btn-cancel" class="btn btn-secondary">
+          Cancel
+        </button>
+      </div>
+    </div>
+  </div>
+  <script src="confirm_popup.js"></script>
+</body>
+</html>
