@@ -6,9 +6,7 @@ import './styles/index.css';
 import { ThemeProvider } from './components/ThemeProvider';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
     <ThemeProvider defaultTheme="dark" storageKey="arialui-theme">
       <App />
     </ThemeProvider>
-  </React.StrictMode>
 );

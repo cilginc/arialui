@@ -44,7 +44,9 @@ function startExtensionServer() {
             mainWindow?.webContents.send('show-add-download-dialog', {
               url: data.url,
               filename: data.filename,
-              referrer: data.referrer
+              referrer: data.referrer,
+              cookies: data.cookies,
+              userAgent: data.userAgent
             });
 
             new Notification({

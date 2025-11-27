@@ -17,6 +17,8 @@ function App() {
   const [initialUrl, setInitialUrl] = useState<string>('');
   const [client, setClient] = useState<Aria2Client | null>(null);
 
+  const [downloadOptions, setDownloadOptions] = useState<{ cookies?: string; userAgent?: string }>({});
+
   const { downloads, refresh, pauseDownload, resumeDownload, removeDownload } = useDownloads(client);
 
   useEffect(() => {
@@ -35,16 +37,21 @@ function App() {
 
     window.electronAPI.onShowAddDownloadDialog((data) => {
       setInitialUrl(data.url);
+      setDownloadOptions({ cookies: data.cookies, userAgent: data.userAgent });
       setIsAddDialogOpen(true);
       console.log('Received download from extension:', data);
     });
   }, []);
 
-  const handleAddDownload = async (url: string) => {
+  const handleAddDownload = async (url: string, options?: { cookies?: string; userAgent?: string }) => {
     if (client) {
       try {
-        await client.addUri([url]);
-        console.log('Added download:', url);
+        const aria2Options: any = {};
+        if (options?.cookies) aria2Options.header = [`Cookie: ${options.cookies}`];
+        if (options?.userAgent) aria2Options['user-agent'] = options.userAgent;
+        
+        await client.addUri([url], aria2Options);
+        console.log('Added download:', url, aria2Options);
         refresh();
       } catch (err) {
         console.error('Failed to add download:', err);
@@ -76,7 +83,11 @@ function App() {
             </div>
             <Button
               className="gap-2 shadow-lg shadow-primary/20"
-              onClick={() => setIsAddDialogOpen(true)}
+              onClick={() => {
+                setInitialUrl('');
+                setDownloadOptions({});
+                setIsAddDialogOpen(true);
+              }}
             >
               <Plus size={18} />
               Add Download
@@ -100,10 +111,14 @@ function App() {
         open={isAddDialogOpen}
         onOpenChange={(open) => {
           setIsAddDialogOpen(open);
-          if (!open) setInitialUrl(''); // Clear initial URL when dialog closes
+          if (!open) {
+            setInitialUrl(''); // Clear initial URL when dialog closes
+            setDownloadOptions({});
+          }
         }}
         onAdd={handleAddDownload}
         initialUrl={initialUrl}
+        initialOptions={downloadOptions}
         autoSubmit={!!initialUrl} // Auto-submit when URL comes from extension
       />
     </div>

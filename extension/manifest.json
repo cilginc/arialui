@@ -8,7 +8,8 @@
     "activeTab",
     "contextMenus",
     "storage",
-    "notifications"
+    "notifications",
+    "cookies"
   ],
   "host_permissions": ["http://localhost:6801/*", "<all_urls>"],
 

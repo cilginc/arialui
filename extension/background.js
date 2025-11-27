@@ -79,10 +79,30 @@ async function sendToAriaLUI(url, referrer, filename) {
     const { settings } = await chrome.storage.sync.get(['settings']);
     const serverUrl = settings?.serverUrl ?? DEFAULT_SETTINGS.serverUrl;
 
+    // Get cookies
+    let cookieString = '';
+    try {
+      const cookies = await chrome.cookies.getAll({ url: url });
+      if (cookies) {
+        cookieString = cookies.map(c => `${c.name}=${c.value}`).join('; ');
+      }
+    } catch (e) {
+      console.warn('Failed to get cookies:', e);
+    }
+
+    // Get User Agent
+    const userAgent = navigator.userAgent;
+
     const response = await fetch(`${serverUrl}/add-download`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, referrer, filename })
+      body: JSON.stringify({ 
+        url, 
+        referrer, 
+        filename,
+        cookies: cookieString,
+        userAgent
+      })
     });
 
     if (!response.ok) {

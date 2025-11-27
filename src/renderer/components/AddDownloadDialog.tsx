@@ -7,12 +7,13 @@ import { Label } from '@/components/ui/label';
 interface AddDownloadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onAdd: (url: string) => void;
+  onAdd: (url: string, options?: { cookies?: string; userAgent?: string }) => void;
   initialUrl?: string;
+  initialOptions?: { cookies?: string; userAgent?: string };
   autoSubmit?: boolean;
 }
 
-export function AddDownloadDialog({ open, onOpenChange, onAdd, initialUrl = '', autoSubmit = false }: AddDownloadDialogProps) {
+export function AddDownloadDialog({ open, onOpenChange, onAdd, initialUrl = '', initialOptions, autoSubmit = false }: AddDownloadDialogProps) {
   const [url, setUrl] = useState('');
   const submitButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -28,7 +29,7 @@ export function AddDownloadDialog({ open, onOpenChange, onAdd, initialUrl = '', 
     if (open && initialUrl && autoSubmit) {
       // Small delay to ensure dialog is fully rendered
       setTimeout(() => {
-        onAdd(initialUrl);
+        onAdd(initialUrl, initialOptions);
         setUrl('');
         onOpenChange(false);
       }, 300);
@@ -47,7 +48,7 @@ export function AddDownloadDialog({ open, onOpenChange, onAdd, initialUrl = '', 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (url) {
-      onAdd(url);
+      onAdd(url, initialOptions);
       setUrl('');
       onOpenChange(false);
     }

@@ -2,7 +2,7 @@ import type { AppConfig, CustomTheme } from '../main/config';
 
 export interface IElectronAPI {
   getAria2Config: () => Promise<{ port: number; secret: string }>;
-  onShowAddDownloadDialog: (callback: (data: { url: string; filename?: string; referrer?: string }) => void) => void;
+  onShowAddDownloadDialog: (callback: (data: { url: string; filename?: string; referrer?: string; cookies?: string; userAgent?: string }) => void) => void;
   minimize: () => void;
   maximize: () => void;
   close: () => void;
