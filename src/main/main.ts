@@ -37,10 +37,12 @@ function startExtensionServer() {
       req.on('end', () => {
         try {
           const data = JSON.parse(body);
+          console.log('[MAIN] Received download request from extension:', data.url);
           if (data.url) {
             // Show window if hidden
             mainWindow?.show();
             // Send to renderer to open dialog with URL
+            console.log('[MAIN] Sending show-add-download-dialog event to renderer');
             mainWindow?.webContents.send('show-add-download-dialog', {
               url: data.url,
               filename: data.filename,

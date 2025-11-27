@@ -16,25 +16,31 @@ interface AddDownloadDialogProps {
 export function AddDownloadDialog({ open, onOpenChange, onAdd, initialUrl = '', initialOptions, autoSubmit = false }: AddDownloadDialogProps) {
   const [url, setUrl] = useState('');
   const submitButtonRef = useRef<HTMLButtonElement>(null);
+  const hasAutoSubmittedRef = useRef<string>(''); // Track which URL we've auto-submitted
 
   // Update URL when initialUrl changes
   useEffect(() => {
     if (initialUrl) {
       setUrl(initialUrl);
+      // Reset the auto-submit tracker when a new URL comes in
+      hasAutoSubmittedRef.current = '';
     }
   }, [initialUrl]);
 
   // Auto-submit when URL is pre-filled and autoSubmit is true
   useEffect(() => {
-    if (open && initialUrl && autoSubmit) {
+    if (open && initialUrl && autoSubmit && hasAutoSubmittedRef.current !== initialUrl) {
+      console.log('[DIALOG] Auto-submitting download:', initialUrl);
+      hasAutoSubmittedRef.current = initialUrl; // Mark this URL as submitted
       // Small delay to ensure dialog is fully rendered
       setTimeout(() => {
         onAdd(initialUrl, initialOptions);
         setUrl('');
         onOpenChange(false);
+        console.log('[DIALOG] Auto-submit completed');
       }, 300);
     }
-  }, [open, initialUrl, autoSubmit, onAdd, onOpenChange]);
+  }, [open, initialUrl, autoSubmit, onAdd, onOpenChange, initialOptions]);
 
   // Focus submit button when URL is pre-filled (but not auto-submitting)
   useEffect(() => {

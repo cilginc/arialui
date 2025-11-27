@@ -116,6 +116,7 @@ async function handleDownloadRequest(url, referrer, filename) {
 
 // Send download to AriaLUI
 async function sendToAriaLUI(url, referrer, filename, backend = 'aria2') {
+  console.log('[EXTENSION] sendToAriaLUI called with URL:', url);
   try {
     const { settings } = await chrome.storage.sync.get(['settings']);
     const serverUrl = settings?.serverUrl ?? DEFAULT_SETTINGS.serverUrl;
@@ -134,6 +135,7 @@ async function sendToAriaLUI(url, referrer, filename, backend = 'aria2') {
     // Get User Agent
     const userAgent = navigator.userAgent;
 
+    console.log('[EXTENSION] Sending POST request to:', `${serverUrl}/add-download`);
     const response = await fetch(`${serverUrl}/add-download`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -152,7 +154,7 @@ async function sendToAriaLUI(url, referrer, filename, backend = 'aria2') {
     }
 
     const data = await response.json();
-    console.log('Sent to AriaLUI:', data);
+    console.log('[EXTENSION] Sent to AriaLUI successfully:', data);
     return true;
   } catch (e) {
     console.error('Failed to send to AriaLUI:', e);

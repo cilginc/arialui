@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Aria2Client } from './api/aria2';
 import { Sidebar } from './components/Sidebar';
 import { DownloadList } from './components/DownloadList';
@@ -36,14 +36,16 @@ function App() {
     initAria2();
 
     window.electronAPI.onShowAddDownloadDialog((data) => {
+      console.log('[RENDERER] Received show-add-download-dialog event:', data.url);
       setInitialUrl(data.url);
       setDownloadOptions({ cookies: data.cookies, userAgent: data.userAgent });
       setIsAddDialogOpen(true);
-      console.log('Received download from extension:', data);
+      console.log('[RENDERER] Dialog opened with autoSubmit enabled');
     });
   }, []);
 
-  const handleAddDownload = async (url: string, options?: { cookies?: string; userAgent?: string }) => {
+  const handleAddDownload = useCallback(async (url: string, options?: { cookies?: string; userAgent?: string }) => {
+    console.log('[APP] handleAddDownload called with URL:', url);
     if (client) {
       try {
         const aria2Options: any = {};
@@ -51,13 +53,13 @@ function App() {
         if (options?.userAgent) aria2Options['user-agent'] = options.userAgent;
         
         await client.addUri([url], aria2Options);
-        console.log('Added download:', url, aria2Options);
+        console.log('[APP] Download added to aria2:', url, aria2Options);
         refresh();
       } catch (err) {
         console.error('Failed to add download:', err);
       }
     }
-  };
+  }, [client, refresh]);
 
   const filteredDownloads = downloads.filter(d => {
     if (activeTab === 'all') return true;

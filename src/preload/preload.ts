@@ -3,6 +3,9 @@ import { contextBridge, ipcRenderer } from 'electron';
 contextBridge.exposeInMainWorld('electronAPI', {
   getAria2Config: () => ipcRenderer.invoke('get-aria2-config'),
   onShowAddDownloadDialog: (callback: (data: { url: string; filename?: string; referrer?: string; cookies?: string; userAgent?: string }) => void) => {
+    // Remove any existing listeners first to prevent duplicates
+    ipcRenderer.removeAllListeners('show-add-download-dialog');
+    // Use 'on' but with proper cleanup
     ipcRenderer.on('show-add-download-dialog', (_event, data) => callback(data));
   },
   minimize: () => ipcRenderer.send('window-minimize'),
