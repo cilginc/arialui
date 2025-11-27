@@ -254,6 +254,13 @@ app.whenReady().then(async () => {
     getDownloadTracker().clearCompleted();
   });
 
+  ipcMain.handle('show-notification', (_event, { title, body }) => {
+    const config = getConfigManager().getConfig();
+    if (config.general.notificationsEnabled !== false) {
+      new Notification({ title, body }).show();
+    }
+  });
+
   ipcMain.on('window-minimize', () => {
     mainWindow?.hide();
   });

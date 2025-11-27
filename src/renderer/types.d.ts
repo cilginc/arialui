@@ -73,6 +73,9 @@ export interface IElectronAPI {
   // File system methods
   checkFileExists: (path: string) => Promise<boolean>;
   deleteFile: (path: string) => Promise<boolean>;
+  
+  // Notification
+  showNotification: (title: string, body: string) => Promise<void>;
 }
 
 declare global {

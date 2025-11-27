@@ -46,6 +46,7 @@ export function SettingsPage() {
   // General settings
   const [defaultBackend, setDefaultBackend] = useState<'aria2' | 'wget2' | 'wget' | 'direct'>('aria2');
   const [downloadDirectory, setDownloadDirectory] = useState('');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
@@ -91,6 +92,7 @@ export function SettingsPage() {
         
         setDefaultBackend(cfg.defaultBackend);
         setDownloadDirectory(cfg.general.downloadDirectory);
+        setNotificationsEnabled(cfg.general.notificationsEnabled ?? true);
 
         // Load custom themes
         const themes = await window.electronAPI.getCustomThemes();
@@ -154,6 +156,7 @@ export function SettingsPage() {
         general: {
           ...config.general,
           downloadDirectory,
+          notificationsEnabled,
         },
       };
 
@@ -289,6 +292,17 @@ export function SettingsPage() {
               />
               <Button variant="outline" disabled>Browse</Button>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="notifications-enabled"
+              checked={notificationsEnabled}
+              onChange={(e) => setNotificationsEnabled(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <Label htmlFor="notifications-enabled">Enable System Notifications</Label>
           </div>
         </CardContent>
       </Card>

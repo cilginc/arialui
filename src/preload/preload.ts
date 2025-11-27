@@ -34,4 +34,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // File system methods
   checkFileExists: (path: string) => ipcRenderer.invoke('check-file-exists', path),
   deleteFile: (path: string) => ipcRenderer.invoke('delete-file', path),
+  // Notification
+  showNotification: (title: string, body: string) => ipcRenderer.invoke('show-notification', { title, body }),
 });

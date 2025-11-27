@@ -123,6 +123,8 @@ export function useDownloads(client: Aria2Client | null) {
     }
   }, [client]);
 
+  const prevStatuses = useRef<Map<string, string>>(new Map());
+
   useEffect(() => {
     if (client) {
       fetchDownloads();
@@ -135,6 +137,17 @@ export function useDownloads(client: Aria2Client | null) {
       }
     };
   }, [client, fetchDownloads]);
+
+  // Check for status changes
+  useEffect(() => {
+    downloads.forEach(d => {
+      const prevStatus = prevStatuses.current.get(d.gid);
+      if (prevStatus && prevStatus !== 'complete' && d.status === 'complete') {
+        window.electronAPI.showNotification('Download Completed', `${d.name} has finished downloading.`);
+      }
+      prevStatuses.current.set(d.gid, d.status);
+    });
+  }, [downloads]);
 
   const pauseDownload = async (gid: string) => {
     if (!client) return;

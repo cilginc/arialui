@@ -95,6 +95,7 @@ export interface AppConfig {
     downloadDirectory: string;
     startMinimized: boolean;
     closeToTray: boolean;
+    notificationsEnabled: boolean;
   };
 }
 
@@ -142,6 +143,7 @@ const DEFAULT_CONFIG: AppConfig = {
     downloadDirectory: path.join(app.getPath('downloads')),
     startMinimized: false,
     closeToTray: true,
+    notificationsEnabled: true,
   },
 };
 
