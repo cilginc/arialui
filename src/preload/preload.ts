@@ -29,6 +29,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
   // Download tracker methods
   getTrackedDownloads: () => ipcRenderer.invoke('get-tracked-downloads'),
-  removeTrackedDownload: (id: string) => ipcRenderer.invoke('remove-tracked-download', id),
+  removeTrackedDownload: (id: string, deleteFile?: boolean) => ipcRenderer.invoke('remove-tracked-download', id, deleteFile),
   clearCompletedDownloads: () => ipcRenderer.invoke('clear-completed-downloads'),
+  // File system methods
+  checkFileExists: (path: string) => ipcRenderer.invoke('check-file-exists', path),
+  deleteFile: (path: string) => ipcRenderer.invoke('delete-file', path),
 });

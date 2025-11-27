@@ -13,6 +13,7 @@ export interface DownloadItem {
   completedLength: number;
   downloadSpeed: number;
   dir: string;
+  fullPath?: string;
   backend?: 'aria2' | 'wget2' | 'wget' | 'direct';
 }
 
@@ -43,13 +44,16 @@ export function useDownloads(client: Aria2Client | null) {
       progress = (completedLength / totalLength) * 100;
     }
 
-    // Determine name
+    // Determine name and fullPath
     let name = 'Unknown';
+    let fullPath = undefined;
+
     if (item.bittorrent && item.bittorrent.info && item.bittorrent.info.name) {
       name = item.bittorrent.info.name;
     } else if (item.files && item.files.length > 0) {
       const filePath = item.files[0].path;
       if (filePath) {
+        fullPath = filePath;
         name = filePath.split(/[/\\]/).pop() || 'Unknown';
       } else if (item.files[0].uris && item.files[0].uris.length > 0) {
         name = item.files[0].uris[0].uri.split('/').pop() || 'Unknown';
@@ -67,6 +71,7 @@ export function useDownloads(client: Aria2Client | null) {
       completedLength,
       downloadSpeed,
       dir: item.dir,
+      fullPath,
       backend: 'aria2',
     };
   };
@@ -85,6 +90,7 @@ export function useDownloads(client: Aria2Client | null) {
       completedLength: item.downloadedBytes,
       downloadSpeed: speed,
       dir: item.savePath || '',
+      fullPath: item.savePath,
       backend: item.backend,
     };
   };
@@ -150,11 +156,11 @@ export function useDownloads(client: Aria2Client | null) {
     }
   };
 
-  const removeDownload = async (gid: string, status: string) => {
+  const removeDownload = async (gid: string, status: string, deleteFile: boolean = false) => {
     // Check if this is a tracked download (non-aria2)
     if (gid.startsWith('direct-') || gid.startsWith('wget-') || gid.startsWith('wget2-')) {
       try {
-        await window.electronAPI.removeTrackedDownload(gid);
+        await window.electronAPI.removeTrackedDownload(gid, deleteFile);
         fetchDownloads();
       } catch (e) {
         console.error('Failed to remove tracked download:', e);
@@ -165,6 +171,23 @@ export function useDownloads(client: Aria2Client | null) {
     // Aria2 download
     if (!client) return;
     try {
+      // If deleteFile is requested, try to delete the file first
+      if (deleteFile) {
+        const download = downloads.find(d => d.gid === gid);
+        if (download && download.fullPath) {
+          try {
+             await window.electronAPI.deleteFile(download.fullPath);
+             console.log('Deleted file for aria2 download:', download.fullPath);
+             
+             // Also try to delete the .aria2 control file
+             const aria2File = download.fullPath + '.aria2';
+             await window.electronAPI.deleteFile(aria2File);
+          } catch (e) {
+             console.error('Failed to delete file for aria2 download:', e);
+          }
+        }
+      }
+
       if (['active', 'waiting', 'paused'].includes(status)) {
          await client.remove(gid);
       } else {

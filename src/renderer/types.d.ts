@@ -67,8 +67,12 @@ export interface IElectronAPI {
   
   // Download tracker methods
   getTrackedDownloads: () => Promise<TrackedDownload[]>;
-  removeTrackedDownload: (id: string) => Promise<void>;
+  removeTrackedDownload: (id: string, deleteFile?: boolean) => Promise<void>;
   clearCompletedDownloads: () => Promise<void>;
+  
+  // File system methods
+  checkFileExists: (path: string) => Promise<boolean>;
+  deleteFile: (path: string) => Promise<boolean>;
 }
 
 declare global {

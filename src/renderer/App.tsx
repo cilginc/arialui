@@ -117,6 +117,29 @@ function App() {
     return true;
   });
 
+  const handleRemove = async (gid: string, status: string) => {
+    const download = downloads.find(d => d.gid === gid);
+    let deleteFile = false;
+
+    if (download && download.fullPath) {
+      try {
+        const exists = await window.electronAPI.checkFileExists(download.fullPath);
+        if (exists) {
+          // Use a custom dialog or standard confirm
+          // Since the requirement says "ask for users", confirm is the simplest way.
+          // "Do you want to delete the file too?"
+          if (confirm(`Do you want to delete the file "${download.name}" from disk as well?`)) {
+            deleteFile = true;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to check file existence:', e);
+      }
+    }
+
+    await removeDownload(gid, status, deleteFile);
+  };
+
   return (
     <div className="flex h-screen text-foreground overflow-hidden">
       <TitleBar />
@@ -152,7 +175,7 @@ function App() {
             downloads={filteredDownloads} 
             onPause={pauseDownload}
             onResume={resumeDownload}
-            onRemove={removeDownload}
+            onRemove={handleRemove}
           />
         )}
       </main>

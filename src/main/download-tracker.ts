@@ -76,7 +76,18 @@ class DownloadTracker {
     return Array.from(this.downloads.values()).filter(d => d.backend === backend);
   }
 
-  public removeDownload(id: string): void {
+  public removeDownload(id: string, deleteFile: boolean = false): void {
+    if (deleteFile) {
+      const download = this.downloads.get(id);
+      if (download && download.savePath && fs.existsSync(download.savePath)) {
+        try {
+          fs.unlinkSync(download.savePath);
+          console.log(`[DownloadTracker] Deleted file: ${download.savePath}`);
+        } catch (e) {
+          console.error(`[DownloadTracker] Failed to delete file: ${download.savePath}`, e);
+        }
+      }
+    }
     this.downloads.delete(id);
     this.save();
     console.log(`[DownloadTracker] Removed download: ${id}`);

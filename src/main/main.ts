@@ -229,8 +229,25 @@ app.whenReady().then(async () => {
     return getDownloadTracker().getAllDownloads();
   });
 
-  ipcMain.handle('remove-tracked-download', (_event, id: string) => {
-    getDownloadTracker().removeDownload(id);
+  ipcMain.handle('remove-tracked-download', (_event, id: string, deleteFile: boolean) => {
+    getDownloadTracker().removeDownload(id, deleteFile);
+  });
+
+  ipcMain.handle('check-file-exists', (_event, filePath: string) => {
+    return require('fs').existsSync(filePath);
+  });
+
+  ipcMain.handle('delete-file', (_event, filePath: string) => {
+    try {
+      if (require('fs').existsSync(filePath)) {
+        require('fs').unlinkSync(filePath);
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('[MAIN] Failed to delete file:', e);
+      return false;
+    }
   });
 
   ipcMain.handle('clear-completed-downloads', () => {
