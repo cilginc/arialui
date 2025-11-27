@@ -1,14 +1,16 @@
 import React from 'react';
-import { Download, Settings, List, CheckCircle, Clock, Trash2, XCircle } from 'lucide-react';
+import { Download, Settings, List, CheckCircle, Clock, XCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import type { BackendStatus } from '../types.d';
 
 interface SidebarProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  backendStatus: BackendStatus[];
 }
 
-export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
+export function Sidebar({ activeTab, onTabChange, backendStatus }: SidebarProps) {
   const navItems = [
     { id: 'all', label: 'All Downloads', icon: List },
     { id: 'active', label: 'Active', icon: Download },
@@ -17,6 +19,19 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     { id: 'failed', label: 'Failed', icon: XCircle },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
+
+  const getHealthColor = (health: string) => {
+    switch (health) {
+      case 'healthy': return 'bg-green-500';
+      case 'unhealthy': return 'bg-red-500';
+      case 'disabled': return 'bg-gray-500';
+      case 'checking': return 'bg-yellow-500';
+      default: return 'bg-gray-500';
+    }
+  };
+
+  // Filter to show only enabled backends, excluding direct download
+  const enabledBackends = backendStatus.filter(b => b.enabled && b.id !== 'direct');
 
   return (
     <div className="w-64 bg-secondary/30 border-r border-border h-full flex flex-col p-4 glass">
@@ -44,10 +59,33 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
       </nav>
 
       <div className="mt-auto pt-4 border-t border-border">
-        <div className="px-2 py-2 text-xs text-muted-foreground">
-          Aria2 Status: <span className="text-primary">Connected</span>
+        <div className="px-2 py-2 text-xs">
+          <div className="font-medium text-muted-foreground mb-2">Backend Status</div>
+          <div className="space-y-1.5">
+            {enabledBackends.length > 0 ? (
+              enabledBackends.map((backend) => (
+                <div key={backend.id} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${getHealthColor(backend.health)}`}></span>
+                    <span className="text-foreground">{backend.name}</span>
+                  </div>
+                  <span className={`capitalize ${
+                    backend.health === 'healthy' ? 'text-green-500' :
+                    backend.health === 'unhealthy' ? 'text-red-500' :
+                    backend.health === 'checking' ? 'text-yellow-500' :
+                    'text-gray-500'
+                  }`}>
+                    {backend.health}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-muted-foreground italic">No backends enabled</p>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
+

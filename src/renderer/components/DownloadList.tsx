@@ -29,17 +29,28 @@ export function DownloadList({ downloads, onPause, onResume, onRemove }: Downloa
         <Card key={item.gid} className="glass-card border-border/50 hover:bg-accent/5 transition-colors">
           <CardContent className="p-4 flex items-center gap-4">
             <div className="flex-1 min-w-0">
-              <div className="flex justify-between mb-1">
+              <div className="flex justify-between items-center mb-1">
                 <h3 className="font-medium truncate" title={item.name}>{item.name}</h3>
-                <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${
-                  item.status === 'active' ? 'bg-primary/20 text-primary' :
-                  item.status === 'error' ? 'bg-destructive/20 text-destructive' :
-                  item.status === 'complete' ? 'bg-green-500/20 text-green-500' :
-                  item.status === 'paused' ? 'bg-yellow-500/20 text-yellow-500' :
-                  'bg-secondary text-muted-foreground'
-                }`}>
-                  {item.status}
-                </span>
+                <div className="flex gap-2">
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    item.backend === 'aria2' ? 'bg-blue-500/20 text-blue-500' :
+                    item.backend === 'wget2' ? 'bg-purple-500/20 text-purple-500' :
+                    item.backend === 'wget' ? 'bg-orange-500/20 text-orange-500' :
+                    item.backend === 'direct' ? 'bg-cyan-500/20 text-cyan-500' :
+                    'bg-blue-500/20 text-blue-500'
+                  }`}>
+                    {item.backend || 'aria2'}
+                  </span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${
+                    item.status === 'active' ? 'bg-primary/20 text-primary' :
+                    item.status === 'error' ? 'bg-destructive/20 text-destructive' :
+                    item.status === 'complete' ? 'bg-green-500/20 text-green-500' :
+                    item.status === 'paused' ? 'bg-yellow-500/20 text-yellow-500' :
+                    'bg-secondary text-muted-foreground'
+                  }`}>
+                    {item.status}
+                  </span>
+                </div>
               </div>
 
               <div className="h-2 w-full bg-secondary rounded-full overflow-hidden">

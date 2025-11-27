@@ -2,11 +2,18 @@ import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, Notification } fr
 if (require('electron-squirrel-startup')) app.quit();
 import path from 'path';
 import http from 'http';
-import { startAria2, stopAria2, getAria2Config } from './aria2';
+import { getAria2Config } from './aria2';
 import { initializeConfig, getConfigManager } from './config';
+import { getBackendManager } from './backend-manager';
+import { Aria2Backend } from './aria2';
+import { Wget2Backend } from './wget2';
+import { WgetBackend } from './wget';
+import { DirectBackend } from './direct-download';
+import { getDownloadTracker } from './download-tracker';
 
 let tray: Tray | null = null;
 let mainWindow: BrowserWindow | null = null;
+let directBackend: DirectBackend | null = null;
 
 // Extension Integration Server
 function startExtensionServer() {
@@ -29,6 +36,20 @@ function startExtensionServer() {
       return;
     }
 
+    // Get available backends endpoint
+    if (req.method === 'GET' && req.url === '/get-backends') {
+      const backendManager = getBackendManager();
+      const backends = backendManager.getBackendStatus();
+      const defaultBackend = backendManager.getDefaultBackend();
+      
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ 
+        backends,
+        defaultBackend
+      }));
+      return;
+    }
+
     if (req.method === 'POST' && req.url === '/add-download') {
       let body = '';
       req.on('data', chunk => {
@@ -48,7 +69,8 @@ function startExtensionServer() {
               filename: data.filename,
               referrer: data.referrer,
               cookies: data.cookies,
-              userAgent: data.userAgent
+              userAgent: data.userAgent,
+              backend: data.backend  // Include backend selection from extension
             });
 
             new Notification({
@@ -140,7 +162,15 @@ app.whenReady().then(async () => {
   // Initialize configuration
   await initializeConfig();
   
-  startAria2();
+  // Initialize backend manager
+  const backendManager = getBackendManager();
+  
+  // Register backends
+  backendManager.registerBackend(new Aria2Backend());
+  backendManager.registerBackend(new Wget2Backend());
+  backendManager.registerBackend(new WgetBackend());
+  // Direct backend will be registered after window is created
+  
   startExtensionServer();
 
   // Configuration IPC handlers
@@ -171,6 +201,42 @@ app.whenReady().then(async () => {
     return getAria2Config();
   });
 
+  // Backend-related IPC handlers
+  ipcMain.handle('get-backend-status', () => {
+    return getBackendManager().getBackendStatus();
+  });
+
+  ipcMain.handle('get-available-backends', () => {
+    return getBackendManager().getAvailableBackends();
+  });
+
+  ipcMain.handle('get-default-backend', () => {
+    return getBackendManager().getDefaultBackend();
+  });
+
+  ipcMain.handle('add-download-with-backend', async (_event, backendId: string, url: string, options: any) => {
+    try {
+      const downloadId = await getBackendManager().addDownload(backendId as any, url, options);
+      return { success: true, downloadId };
+    } catch (error: any) {
+      console.error('[MAIN] Failed to add download:', error);
+      return { success: false, error: error.message };
+    }
+  });
+
+  // Download tracker IPC handlers
+  ipcMain.handle('get-tracked-downloads', () => {
+    return getDownloadTracker().getAllDownloads();
+  });
+
+  ipcMain.handle('remove-tracked-download', (_event, id: string) => {
+    getDownloadTracker().removeDownload(id);
+  });
+
+  ipcMain.handle('clear-completed-downloads', () => {
+    getDownloadTracker().clearCompleted();
+  });
+
   ipcMain.on('window-minimize', () => {
     mainWindow?.hide();
   });
@@ -190,6 +256,19 @@ app.whenReady().then(async () => {
   createWindow();
   createTray();
 
+  // Register direct backend after window is created
+  directBackend = new DirectBackend(mainWindow);
+  backendManager.registerBackend(directBackend);
+
+  // Start all backends
+  await backendManager.start();
+
+  // Send backend status updates every 10 seconds
+  setInterval(() => {
+    const status = backendManager.getBackendStatus();
+    mainWindow?.webContents.send('backend-status-changed', status);
+  }, 10000);
+
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
@@ -199,8 +278,8 @@ app.on('before-quit', () => {
   (app as any).isQuitting = true;
 });
 
-app.on('will-quit', () => {
-  stopAria2();
+app.on('will-quit', async () => {
+  await getBackendManager().stop();
 });
 
 app.on('window-all-closed', function () {

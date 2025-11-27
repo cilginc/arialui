@@ -5,6 +5,9 @@ const DEFAULT_SETTINGS = {
   autoStart: false
 };
 
+// Cache settings for synchronous access
+let currentSettings = { ...DEFAULT_SETTINGS };
+
 // Initialize extension
 chrome.runtime.onInstalled.addListener(() => {
   // Create context menu
@@ -19,6 +22,7 @@ chrome.runtime.onInstalled.addListener(() => {
     if (!result.settings) {
       chrome.storage.sync.set({ settings: DEFAULT_SETTINGS });
     } else {
+      currentSettings = { ...DEFAULT_SETTINGS, ...result.settings };
       // Ensure new settings are added to existing ones
       const newSettings = { ...DEFAULT_SETTINGS, ...result.settings };
       if (JSON.stringify(newSettings) !== JSON.stringify(result.settings)) {
@@ -26,6 +30,20 @@ chrome.runtime.onInstalled.addListener(() => {
       }
     }
   });
+});
+
+// Keep settings cache updated
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'sync' && changes.settings) {
+    currentSettings = { ...DEFAULT_SETTINGS, ...changes.settings.newValue };
+  }
+});
+
+// Load settings on startup
+chrome.storage.sync.get(['settings'], (result) => {
+  if (result.settings) {
+    currentSettings = { ...DEFAULT_SETTINGS, ...result.settings };
+  }
 });
 
 // Handle context menu clicks
@@ -39,23 +57,31 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 });
 
 // Intercept downloads automatically if enabled
-chrome.downloads.onCreated.addListener(async (downloadItem) => {
-  const { settings } = await chrome.storage.sync.get(['settings']);
-  const autoIntercept = settings?.autoIntercept ?? DEFAULT_SETTINGS.autoIntercept;
+// Using onDeterminingFilename to prevent "Save As" dialog from appearing
+chrome.downloads.onDeterminingFilename.addListener((downloadItem, suggest) => {
+  const autoIntercept = currentSettings.autoIntercept;
 
   if (!autoIntercept) {
-    return; // User disabled auto-intercept
+    return false; // Let browser handle it
   }
 
   // Don't intercept if it's a very small file (likely a webpage/html)
   // or if we don't have a URL
   if (!downloadItem.url || downloadItem.url.startsWith('data:')) {
-    return;
+    return false;
   }
 
+  // Check if this download was initiated by our extension to avoid loops
+  // (Though we use fetch for AriaLUI, so it shouldn't trigger this, but good to be safe)
+  
   try {
-    // Cancel the browser download
+    console.log('[EXTENSION] Intercepting download:', downloadItem.url);
+
+    // Cancel the browser download immediately
     chrome.downloads.cancel(downloadItem.id, () => {
+      if (chrome.runtime.lastError) {
+        console.warn('Failed to cancel download:', chrome.runtime.lastError);
+      }
       chrome.downloads.erase({ id: downloadItem.id });
     });
 
@@ -65,14 +91,19 @@ chrome.downloads.onCreated.addListener(async (downloadItem) => {
       downloadItem.filename
     );
 
+    // Return true to tell Chrome we are handling the filename determination.
+    // Since we cancelled the download, we don't need to call suggest().
+    // This effectively pauses the native download flow until cancellation takes effect.
+    return true;
+
   } catch (e) {
     console.error('Failed to intercept download:', e);
+    return false;
   }
 });
 
 async function handleDownloadRequest(url, referrer, filename) {
-  const { settings } = await chrome.storage.sync.get(['settings']);
-  const autoStart = settings?.autoStart ?? DEFAULT_SETTINGS.autoStart;
+  const autoStart = currentSettings.autoStart;
 
   if (!autoStart) {
     // Open confirmation popup

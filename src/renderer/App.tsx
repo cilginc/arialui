@@ -7,15 +7,18 @@ import { AddDownloadDialog } from './components/AddDownloadDialog';
 import { Button } from './components/ui/button';
 import { Plus } from 'lucide-react';
 import { useDownloads } from './hooks/useDownloads';
+import type { BackendStatus, BackendType } from './types.d';
 
 import { TitleBar } from './components/TitleBar';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab,setActiveTab] = useState('all');
   const [version, setVersion] = useState<string>('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [initialUrl, setInitialUrl] = useState<string>('');
+  const [initialBackend, setInitialBackend] = useState<string>();
   const [client, setClient] = useState<Aria2Client | null>(null);
+  const [backendStatus, setBackendStatus] = useState<BackendStatus[]>([]);
 
   const [downloadOptions, setDownloadOptions] = useState<{ cookies?: string; userAgent?: string }>({});
 
@@ -35,29 +38,73 @@ function App() {
     };
     initAria2();
 
+    // Load initial backend status
+    loadBackendStatus();
+
     window.electronAPI.onShowAddDownloadDialog((data) => {
-      console.log('[RENDERER] Received show-add-download-dialog event:', data.url);
+      console.log('[RENDERER] Received show-add-download-dialog event:', data);
       setInitialUrl(data.url);
+      setInitialBackend(data.backend);
       setDownloadOptions({ cookies: data.cookies, userAgent: data.userAgent });
       setIsAddDialogOpen(true);
       console.log('[RENDERER] Dialog opened with autoSubmit enabled');
     });
+
+    // Subscribe to backend status updates
+    window.electronAPI.onBackendStatusChanged((status) => {
+      console.log('[RENDERER] Backend status updated:', status);
+      setBackendStatus(status);
+    });
   }, []);
 
-  const handleAddDownload = useCallback(async (url: string, options?: { cookies?: string; userAgent?: string }) => {
-    console.log('[APP] handleAddDownload called with URL:', url);
-    if (client) {
-      try {
+  const loadBackendStatus = async () => {
+    try {
+      const status = await window.electronAPI.getBackendStatus();
+      setBackendStatus(status);
+    } catch (error) {
+      console.error('[APP] Failed to load backend status:', error);
+    }
+  };
+
+  const handleAddDownload = useCallback(async (
+    url: string, 
+    backend?: BackendType, 
+    options?: { cookies?: string; userAgent?: string }
+  ) => {
+    console.log('[APP] handleAddDownload called with URL:', url, 'Backend:', backend);
+    
+    // Default to aria2 if no backend specified
+    const selectedBackend = backend || 'aria2';
+    
+    try {
+      // For aria2, use the direct client for better UI integration
+      if (selectedBackend === 'aria2' && client) {
         const aria2Options: any = {};
         if (options?.cookies) aria2Options.header = [`Cookie: ${options.cookies}`];
         if (options?.userAgent) aria2Options['user-agent'] = options.userAgent;
         
         await client.addUri([url], aria2Options);
-        console.log('[APP] Download added to aria2:', url, aria2Options);
+        console.log('[APP] Download added to aria2:', url);
         refresh();
-      } catch (err) {
-        console.error('Failed to add download:', err);
+      } else {
+        // For other backends, use the backend manager
+        const result = await window.electronAPI.addDownloadWithBackend(
+          selectedBackend,
+          url,
+          options
+        );
+        
+        if (result.success) {
+          console.log('[APP] Download added successfully:', result.downloadId);
+          alert(`Download started with ${selectedBackend}. Note: Only aria2 downloads are shown in the list.`);
+        } else {
+          console.error('[APP] Failed to add download:', result.error);
+          alert(`Failed to add download: ${result.error}`);
+        }
       }
+    } catch (err) {
+      console.error('[APP] Error adding download:', err);
+      alert('Failed to add download');
     }
   }, [client, refresh]);
 
@@ -74,7 +121,7 @@ function App() {
     <div className="flex h-screen text-foreground overflow-hidden">
       <TitleBar />
 
-      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+      <Sidebar activeTab={activeTab} onTabChange={setActiveTab} backendStatus={backendStatus} />
 
       <main className="flex-1 flex flex-col min-w-0 pt-8">
         {activeTab !== 'settings' && (
@@ -87,6 +134,7 @@ function App() {
               className="gap-2 shadow-lg shadow-primary/20"
               onClick={() => {
                 setInitialUrl('');
+                setInitialBackend(undefined);
                 setDownloadOptions({});
                 setIsAddDialogOpen(true);
               }}
@@ -114,14 +162,16 @@ function App() {
         onOpenChange={(open) => {
           setIsAddDialogOpen(open);
           if (!open) {
-            setInitialUrl(''); // Clear initial URL when dialog closes
+            setInitialUrl('');
+            setInitialBackend(undefined);
             setDownloadOptions({});
           }
         }}
         onAdd={handleAddDownload}
         initialUrl={initialUrl}
+        initialBackend={initialBackend}
         initialOptions={downloadOptions}
-        autoSubmit={!!initialUrl} // Auto-submit when URL comes from extension
+        autoSubmit={!!initialUrl}
       />
     </div>
   );

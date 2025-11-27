@@ -39,6 +39,7 @@ export interface CustomTheme {
 }
 
 export interface Aria2Config {
+  enabled: boolean;
   port: number;
   secret: string;
   rpcListenAll: boolean;
@@ -50,13 +51,46 @@ export interface Aria2Config {
   downloadDir: string;
 }
 
+export interface WgetConfig {
+  enabled: boolean;
+  maxConcurrentDownloads: number;
+  maxConnectionPerServer: number;
+  timeout: number;
+  retries: number;
+  downloadDir: string;
+}
+
+export interface Wget2Config {
+  enabled: boolean;
+  maxConcurrentDownloads: number;
+  maxConnectionPerServer: number;
+  timeout: number;
+  retries: number;
+  downloadDir: string;
+}
+
+export interface DirectConfig {
+  enabled: boolean;
+  downloadDir: string;
+}
+
+export interface BackendsConfig {
+  aria2: Aria2Config;
+  wget2: Wget2Config;
+  wget: WgetConfig;
+  direct: DirectConfig;
+}
+
 export interface AppConfig {
   version: number;
   theme: {
     mode: 'light' | 'dark' | 'system' | 'custom' | string;
     customThemeName?: string;
   };
-  aria2: Aria2Config;
+  defaultBackend: 'aria2' | 'wget2' | 'wget' | 'direct';
+  backends: BackendsConfig;
+  // Legacy field for backward compatibility
+  aria2?: Aria2Config;
   general: {
     downloadDirectory: string;
     startMinimized: boolean;
@@ -65,20 +99,44 @@ export interface AppConfig {
 }
 
 const DEFAULT_CONFIG: AppConfig = {
-  version: 1,
+  version: 2,
   theme: {
     mode: 'dark',
   },
-  aria2: {
-    port: 6800,
-    secret: 'arialui_secret_token',
-    rpcListenAll: false,
-    rpcAllowOriginAll: true,
-    maxConcurrentDownloads: 5,
-    maxConnectionPerServer: 5,
-    minSplitSize: '10M',
-    split: 5,
-    downloadDir: path.join(app.getPath('downloads')),
+  defaultBackend: 'aria2',
+  backends: {
+    aria2: {
+      enabled: true,
+      port: 6800,
+      secret: 'arialui_secret_token',
+      rpcListenAll: false,
+      rpcAllowOriginAll: true,
+      maxConcurrentDownloads: 5,
+      maxConnectionPerServer: 5,
+      minSplitSize: '10M',
+      split: 5,
+      downloadDir: path.join(app.getPath('downloads')),
+    },
+    wget2: {
+      enabled: false,
+      maxConcurrentDownloads: 3,
+      maxConnectionPerServer: 5,
+      timeout: 30,
+      retries: 3,
+      downloadDir: path.join(app.getPath('downloads')),
+    },
+    wget: {
+      enabled: false,
+      maxConcurrentDownloads: 3,
+      maxConnectionPerServer: 4,
+      timeout: 30,
+      retries: 3,
+      downloadDir: path.join(app.getPath('downloads')),
+    },
+    direct: {
+      enabled: true,
+      downloadDir: path.join(app.getPath('downloads')),
+    },
   },
   general: {
     downloadDirectory: path.join(app.getPath('downloads')),
@@ -111,10 +169,23 @@ class ConfigManager {
     try {
       if (fs.existsSync(this.configPath)) {
         const fileContent = fs.readFileSync(this.configPath, 'utf-8');
-        const parsed = TOML.parse(fileContent) as unknown as AppConfig;
+        let parsed = TOML.parse(fileContent) as unknown as AppConfig;
+        
+        // Migrate old config structure (version 1) to new structure (version 2)
+        if (!parsed.version || parsed.version === 1) {
+          console.log('Migrating configuration from v1 to v2...');
+          parsed = this.migrateConfigToV2(parsed);
+        }
         
         // Merge with defaults to handle any missing fields
         this.config = this.mergeWithDefaults(parsed);
+        
+        // Save migrated config
+        if (!fs.existsSync(this.configPath) || parsed.version !== this.config.version) {
+          await this.save();
+          console.log('Configuration migrated and saved');
+        }
+        
         console.log('Configuration loaded from:', this.configPath);
       } else {
         // Create default config file
@@ -204,6 +275,30 @@ class ConfigManager {
       console.error('Failed to list custom themes:', error);
       return [];
     }
+  }
+
+  private migrateConfigToV2(oldConfig: any): AppConfig {
+    // If old config has aria2 at root level, migrate to backends structure
+    if (oldConfig.aria2 && !oldConfig.backends) {
+      const migratedConfig: any = {
+        ...oldConfig,
+        version: 2,
+        defaultBackend: 'aria2',
+        backends: {
+          aria2: {
+            enabled: true,
+            ...oldConfig.aria2,
+          },
+          wget2: DEFAULT_CONFIG.backends.wget2,
+          wget: DEFAULT_CONFIG.backends.wget,
+          direct: DEFAULT_CONFIG.backends.direct,
+        },
+      };
+      // Remove old aria2 field
+      delete migratedConfig.aria2;
+      return migratedConfig as AppConfig;
+    }
+    return oldConfig as AppConfig;
   }
 
   private mergeWithDefaults(config: Partial<AppConfig>): AppConfig {

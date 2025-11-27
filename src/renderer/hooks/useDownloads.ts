@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Aria2Client } from '../api/aria2';
+import type { TrackedDownload } from '../types.d';
 
 export interface DownloadItem {
   gid: string;
@@ -12,6 +13,7 @@ export interface DownloadItem {
   completedLength: number;
   downloadSpeed: number;
   dir: string;
+  backend?: 'aria2' | 'wget2' | 'wget' | 'direct';
 }
 
 export function useDownloads(client: Aria2Client | null) {
@@ -48,7 +50,6 @@ export function useDownloads(client: Aria2Client | null) {
     } else if (item.files && item.files.length > 0) {
       const filePath = item.files[0].path;
       if (filePath) {
-        // Extract filename from path
         name = filePath.split(/[/\\]/).pop() || 'Unknown';
       } else if (item.files[0].uris && item.files[0].uris.length > 0) {
         name = item.files[0].uris[0].uri.split('/').pop() || 'Unknown';
@@ -66,6 +67,25 @@ export function useDownloads(client: Aria2Client | null) {
       completedLength,
       downloadSpeed,
       dir: item.dir,
+      backend: 'aria2',
+    };
+  };
+
+  const mapTrackedItem = (item: TrackedDownload): DownloadItem => {
+    const speed = item.status === 'active' && item.speed > 0 ? item.speed : 0;
+    
+    return {
+      gid: item.id,
+      name: item.filename,
+      status: item.status,
+      progress: item.progress,
+      speed: formatSpeed(speed),
+      size: formatSize(item.totalBytes),
+      totalLength: item.totalBytes,
+      completedLength: item.downloadedBytes,
+      downloadSpeed: speed,
+      dir: item.savePath || '',
+      backend: item.backend,
     };
   };
 
@@ -73,6 +93,7 @@ export function useDownloads(client: Aria2Client | null) {
     if (!client) return;
 
     try {
+      // Fetch aria2 downloads
       const [active, waiting, stopped, stat] = await Promise.all([
         client.tellActive(),
         client.tellWaiting(0, 1000),
@@ -80,13 +101,16 @@ export function useDownloads(client: Aria2Client | null) {
         client.getGlobalStat(),
       ]);
 
-      const allRaw = [...active, ...waiting, ...stopped];
-      const mapped = allRaw.map(mapAria2Item);
+      const aria2Downloads = [...active, ...waiting, ...stopped].map(mapAria2Item);
       
-      // Sort by GID or maybe something else? For now, just reverse to show newest first if they are ordered by ID
-      // Actually aria2 returns them in order.
+      // Fetch tracked downloads (non-aria2)
+      const trackedDownloads = await window.electronAPI.getTrackedDownloads();
+      const mappedTracked = trackedDownloads.map(mapTrackedItem);
       
-      setDownloads(mapped);
+      // Merge both lists
+      const allDownloads = [...aria2Downloads, ...mappedTracked];
+      
+      setDownloads(allDownloads);
       setGlobalStat(stat);
     } catch (err) {
       console.error('Failed to fetch downloads:', err);
@@ -112,7 +136,6 @@ export function useDownloads(client: Aria2Client | null) {
       await client.pause(gid);
       fetchDownloads();
     } catch (e) {
-      // If pause fails, it might be because it's already paused or not active, try force pause or ignore
       console.error(e);
     }
   };
@@ -128,6 +151,18 @@ export function useDownloads(client: Aria2Client | null) {
   };
 
   const removeDownload = async (gid: string, status: string) => {
+    // Check if this is a tracked download (non-aria2)
+    if (gid.startsWith('direct-') || gid.startsWith('wget-') || gid.startsWith('wget2-')) {
+      try {
+        await window.electronAPI.removeTrackedDownload(gid);
+        fetchDownloads();
+      } catch (e) {
+        console.error('Failed to remove tracked download:', e);
+      }
+      return;
+    }
+
+    // Aria2 download
     if (!client) return;
     try {
       if (['active', 'waiting', 'paused'].includes(status)) {
@@ -138,7 +173,6 @@ export function useDownloads(client: Aria2Client | null) {
       fetchDownloads();
     } catch (e) {
        console.error('Failed to remove download:', e);
-       // Fallback: try the other method just in case status was stale
        try {
          if (['active', 'waiting', 'paused'].includes(status)) {
             await client.removeDownloadResult(gid);
