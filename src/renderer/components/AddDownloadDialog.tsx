@@ -132,7 +132,7 @@ export function AddDownloadDialog({
             <Label htmlFor="url">Download URL</Label>
             <Input
               id="url"
-              placeholder="https://example.com/file.zip"
+              placeholder=""
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               className="col-span-3 bg-secondary/50 border-border"
@@ -146,7 +146,7 @@ export function AddDownloadDialog({
               id="backend"
               value={selectedBackend}
               onChange={(e) => setSelectedBackend(e.target.value as BackendType)}
-              className="flex h-10 w-full rounded-md border border-border bg-secondary/50 px-3 py-2 text-sm text-foreground"
+              className='flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2'
             >
               {backends.map((backend) => (
                 <option 
