@@ -8,6 +8,11 @@ const DEFAULT_SETTINGS = {
 // Cache settings for synchronous access
 let currentSettings = { ...DEFAULT_SETTINGS };
 
+// Connection status cache
+let isConnected = false;
+let lastConnectionCheck = 0;
+const CONNECTION_CHECK_INTERVAL = 5000; // Check every 5 seconds
+
 // Initialize extension
 chrome.runtime.onInstalled.addListener(() => {
   // Create context menu
@@ -30,6 +35,9 @@ chrome.runtime.onInstalled.addListener(() => {
       }
     }
   });
+
+  // Start periodic connection check
+  startConnectionMonitoring();
 });
 
 // Keep settings cache updated
@@ -46,6 +54,9 @@ chrome.storage.sync.get(['settings'], (result) => {
   }
 });
 
+// Start connection monitoring on startup as well
+startConnectionMonitoring();
+
 // Handle context menu clicks
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "download-with-arialui") {
@@ -56,12 +67,45 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
 });
 
+// Connection monitoring function
+function startConnectionMonitoring() {
+  // Perform initial check
+  updateConnectionStatus();
+
+  // Set up periodic checks
+  setInterval(updateConnectionStatus, CONNECTION_CHECK_INTERVAL);
+}
+
+async function updateConnectionStatus() {
+  const now = Date.now();
+  
+  // Skip if we checked recently (within 1 second to avoid rapid checks)
+  if (now - lastConnectionCheck < 1000) {
+    return;
+  }
+  
+  lastConnectionCheck = now;
+  const connected = await checkConnection();
+  
+  if (isConnected !== connected) {
+    isConnected = connected;
+    console.log(`[EXTENSION] AriaLUI connection status changed: ${connected ? 'Connected' : 'Disconnected'}`);
+  }
+}
+
 // Intercept downloads automatically if enabled
 // Using onDeterminingFilename to prevent "Save As" dialog from appearing
 chrome.downloads.onDeterminingFilename.addListener((downloadItem, suggest) => {
   const autoIntercept = currentSettings.autoIntercept;
 
   if (!autoIntercept) {
+    console.log('[EXTENSION] Auto-intercept disabled, letting browser handle download');
+    return false; // Let browser handle it
+  }
+
+  // Check if AriaLUI is connected - if not, let browser handle download
+  if (!isConnected) {
+    console.log('[EXTENSION] AriaLUI not connected, letting browser handle download');
     return false; // Let browser handle it
   }
 
@@ -186,9 +230,18 @@ async function sendToAriaLUI(url, referrer, filename, backend = 'aria2') {
 
     const data = await response.json();
     console.log('[EXTENSION] Sent to AriaLUI successfully:', data);
+    
+    // Update connection status since we successfully connected
+    isConnected = true;
+    lastConnectionCheck = Date.now();
+    
     return true;
   } catch (e) {
     console.error('Failed to send to AriaLUI:', e);
+    
+    // Update connection status since we failed to connect
+    isConnected = false;
+    lastConnectionCheck = Date.now();
     
     // Show error notification
     chrome.notifications.create({
@@ -210,7 +263,8 @@ async function checkConnection() {
     const serverUrl = settings?.serverUrl ?? DEFAULT_SETTINGS.serverUrl;
 
     const response = await fetch(`${serverUrl}/ping`, {
-      method: 'GET'
+      method: 'GET',
+      signal: AbortSignal.timeout(2000) // 2 second timeout
     });
 
     return response.ok;
@@ -232,5 +286,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       sendResponse({ success });
     });
     return true; // Will respond asynchronously
+  }
+  
+  if (request.action === 'getConnectionStatus') {
+    sendResponse({ isConnected });
+    return false;
   }
 });

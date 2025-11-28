@@ -122,6 +122,38 @@ body {
   color: #f87171;
 }
 
+/* Warning Box */
+.warning-box {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(251, 191, 36, 0.15);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  border-radius: 10px;
+  margin-bottom: 16px;
+  animation: slideIn 0.3s ease;
+}
+
+.warning-box svg {
+  color: #fbbf24;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.warning-box strong {
+  display: block;
+  color: #fbbf24;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.warning-box p {
+  color: #d1d1d1;
+  font-size: 12px;
+  line-height: 1.4;
+  margin: 0;
+}
+
 /* Section */
 .section {
   margin-bottom: 16px;

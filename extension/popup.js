@@ -59,6 +59,7 @@ async function loadSettings() {
 async function updateConnectionStatus() {
   const statusDot = document.getElementById('statusDot');
   const statusText = document.getElementById('statusText');
+  const warningBox = document.getElementById('disconnectWarning');
 
   try {
     isConnected = await chrome.runtime.sendMessage({ action: 'checkConnection' });
@@ -66,13 +67,16 @@ async function updateConnectionStatus() {
     if (isConnected) {
       statusDot.className = 'status-dot connected';
       statusText.textContent = 'Connected';
+      if (warningBox) warningBox.style.display = 'none';
     } else {
       statusDot.className = 'status-dot disconnected';
       statusText.textContent = 'Disconnected';
+      if (warningBox) warningBox.style.display = 'flex';
     }
   } catch (e) {
     statusDot.className = 'status-dot disconnected';
     statusText.textContent = 'Error';
+    if (warningBox) warningBox.style.display = 'flex';
   }
 }
 
