@@ -96,7 +96,8 @@ function App() {
         
         if (result.success) {
           console.log('[APP] Download added successfully:', result.downloadId);
-          alert(`Download started with ${selectedBackend}. Note: Only aria2 downloads are shown in the list.`);
+          // Refresh list to show new download
+          refresh();
         } else {
           console.error('[APP] Failed to add download:', result.error);
           alert(`Failed to add download: ${result.error}`);
