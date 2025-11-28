@@ -22,11 +22,11 @@ export function Sidebar({ activeTab, onTabChange, backendStatus }: SidebarProps)
 
   const getHealthColor = (health: string) => {
     switch (health) {
-      case 'healthy': return 'bg-green-500';
-      case 'unhealthy': return 'bg-red-500';
-      case 'disabled': return 'bg-gray-500';
-      case 'checking': return 'bg-yellow-500';
-      default: return 'bg-gray-500';
+      case 'healthy': return 'bg-accent-green';
+      case 'unhealthy': return 'bg-accent-red';
+      case 'disabled': return 'bg-muted';
+      case 'checking': return 'bg-accent-yellow';
+      default: return 'bg-muted';
     }
   };
 
@@ -70,10 +70,10 @@ export function Sidebar({ activeTab, onTabChange, backendStatus }: SidebarProps)
                     <span className="text-foreground">{backend.name}</span>
                   </div>
                   <span className={`capitalize ${
-                    backend.health === 'healthy' ? 'text-green-500' :
-                    backend.health === 'unhealthy' ? 'text-red-500' :
-                    backend.health === 'checking' ? 'text-yellow-500' :
-                    'text-gray-500'
+                    backend.health === 'healthy' ? 'text-accent-green' :
+                    backend.health === 'unhealthy' ? 'text-accent-red' :
+                    backend.health === 'checking' ? 'text-accent-yellow' :
+                    'text-muted-foreground'
                   }`}>
                     {backend.health}
                   </span>

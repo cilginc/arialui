@@ -2,7 +2,7 @@
 version = 1
 name = "Dracula"
 description = "The popular Dracula theme"
-variant = "dark"
+
 
 [colors.core]
 background = "#282A36"

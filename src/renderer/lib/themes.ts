@@ -3,7 +3,6 @@ export interface CustomTheme {
     version: number;
     name: string;
     description: string;
-    variant: 'dark' | 'light';
     icon?: string;
   };
   colors: {
@@ -26,6 +25,7 @@ export interface CustomTheme {
     };
   };
 }
+
 
 // Convert hex to HSL
 function hexToHSL(hex: string): string {
@@ -150,9 +150,13 @@ export function applyTheme(theme: CustomTheme): void {
   const fgHSL = hexToHSL(theme.colors.core.foreground);
   const borderHSL = hexToHSL(theme.colors.core.border);
   const accentHSL = hexToHSL(theme.colors.core.accent);
+  
+  // Auto-detect if theme is dark or light based on background lightness
+  const isDarkTheme = !isLightColor(bgHSL);
+  
   const secondaryBgHSL = theme.colors.core.secondary_background 
     ? hexToHSL(theme.colors.core.secondary_background)
-    : adjustLightness(bgHSL, theme.meta.variant === 'dark' ? 5 : -5);
+    : adjustLightness(bgHSL, isDarkTheme ? 5 : -5);
   
   // Core colors
   root.style.setProperty('--background', bgHSL);
@@ -193,7 +197,18 @@ export function applyTheme(theme: CustomTheme): void {
   root.style.setProperty('--input', borderHSL);
   root.style.setProperty('--ring', accentHSL);
 
-  // Set theme variant class
+  // Set all accent colors as CSS variables for components to use
+  root.style.setProperty('--accent-blue', hexToHSL(theme.colors.accents.blue));
+  root.style.setProperty('--accent-green', hexToHSL(theme.colors.accents.green));
+  root.style.setProperty('--accent-magenta', hexToHSL(theme.colors.accents.magenta));
+  root.style.setProperty('--accent-orange', hexToHSL(theme.colors.accents.orange));
+  root.style.setProperty('--accent-purple', hexToHSL(theme.colors.accents.purple));
+  root.style.setProperty('--accent-red', hexToHSL(theme.colors.accents.red));
+  root.style.setProperty('--accent-yellow', hexToHSL(theme.colors.accents.yellow));
+  root.style.setProperty('--accent-cyan', hexToHSL(theme.colors.accents.cyan));
+
+  // Set theme class based on detected brightness
   root.classList.remove('light', 'dark');
-  root.classList.add(theme.meta.variant);
+  root.classList.add(isDarkTheme ? 'dark' : 'light');
 }
+

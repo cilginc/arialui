@@ -28,74 +28,25 @@
   --color-card: hsl(var(--card));
   --color-card-foreground: hsl(var(--card-foreground));
 
+  /* Accent colors from theme */
+  --color-accent-blue: hsl(var(--accent-blue));
+  --color-accent-green: hsl(var(--accent-green));
+  --color-accent-magenta: hsl(var(--accent-magenta));
+  --color-accent-orange: hsl(var(--accent-orange));
+  --color-accent-purple: hsl(var(--accent-purple));
+  --color-accent-red: hsl(var(--accent-red));
+  --color-accent-yellow: hsl(var(--accent-yellow));
+  --color-accent-cyan: hsl(var(--accent-cyan));
+
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
 }
 
+
 :root {
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   --radius: 0.75rem;
-}
-
-.dark {
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
-
-  --card: 217 33% 17%;
-  --card-foreground: 210 40% 98%;
-
-  --popover: 222 47% 11%;
-  --popover-foreground: 210 40% 98%;
-
-  --primary: 262 83% 58%;
-  --primary-foreground: 210 40% 98%;
-
-  --secondary: 217 19% 27%;
-  --secondary-foreground: 210 40% 98%;
-
-  --muted: 217 19% 27%;
-  --muted-foreground: 215 20% 65%;
-
-  --accent: 217 19% 27%;
-  --accent-foreground: 210 40% 98%;
-
-  --destructive: 0 62% 30%;
-  --destructive-foreground: 210 40% 98%;
-
-  --border: 217 19% 27%;
-  --input: 217 19% 27%;
-  --ring: 262 83% 58%;
-}
-
-.light {
-  --background: 0 0% 100%;
-  --foreground: 222 47% 11%;
-
-  --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
-
-  --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-
-  --primary: 262 83% 58%;
-  --primary-foreground: 210 40% 98%;
-
-  --secondary: 210 40% 96.1%;
-  --secondary-foreground: 222 47% 11%;
-
-  --muted: 210 40% 96.1%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-
-  --accent: 210 40% 96.1%;
-  --accent-foreground: 222 47% 11%;
-
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 262 83% 58%;
 }
 
 body {
@@ -103,12 +54,9 @@ body {
   margin: 0;
   padding: 0;
   overflow: hidden;
-  /* Default to dark mode background style, but let classes override colors */
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Specific background styles for dark mode */
-/* Specific background styles for dark mode removed to allow custom themes to control background */
 
 .drag-region {
   -webkit-app-region: drag;

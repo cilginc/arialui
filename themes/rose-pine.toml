@@ -2,7 +2,7 @@
 version = 1
 name = "Rosé Pine"
 description = "All natural pine, faux fur and a bit of soho vibes for the classy minimalist"
-variant = "dark"
+
 
 [colors.core]
 background = "#191724"

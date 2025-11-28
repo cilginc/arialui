@@ -61,18 +61,41 @@ export function ThemeProvider({
     root.classList.remove("light", "dark")
 
     const applyThemeClass = async () => {
-      // Handle light/dark/system
+      // Handle system theme - load appropriate TOML file based on system preference
       if (theme === "system") {
-        clearCustomTheme()
         const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
           .matches
           ? "dark"
           : "light"
-        root.classList.add(systemTheme)
+        
+        try {
+          const customTheme = await window.electronAPI.loadCustomTheme(systemTheme)
+          if (customTheme) {
+            applyTheme(customTheme)
+            return
+          }
+        } catch (error) {
+          console.error('Failed to load system theme:', error)
+        }
+        
+        // Fallback to dark if loading fails
+        root.classList.add('dark')
         return
       }
 
+      // Handle light and dark themes - load from TOML files
       if (theme === "light" || theme === "dark") {
+        try {
+          const customTheme = await window.electronAPI.loadCustomTheme(theme)
+          if (customTheme) {
+            applyTheme(customTheme)
+            return
+          }
+        } catch (error) {
+          console.error(`Failed to load ${theme} theme:`, error)
+        }
+        
+        // Fallback - apply class directly if TOML fails to load
         clearCustomTheme()
         root.classList.add(theme)
         return

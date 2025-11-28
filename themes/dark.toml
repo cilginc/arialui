@@ -1,15 +1,14 @@
 [meta]
 version = 1
-name = "Tokyo Night"
-description = "A clean, dark theme that celebrates the lights of downtown Tokyo at night"
-
+name = "Dark"
+description = "Clean and modern dark theme"
 
 [colors.core]
 background = "#1a1b26"
-foreground = "#c0caf5"
-secondary_background = "#16161e"
-border = "#414868"
-accent = "#7aa2f7"
+foreground = "#f8f8f2"
+secondary_background = "#24283b"
+border = "#3b4261"
+accent = "#8b5cf6"
 
 [colors.accents]
 blue = "#7aa2f7"

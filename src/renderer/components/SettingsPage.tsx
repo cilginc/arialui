@@ -180,11 +180,14 @@ export function SettingsPage() {
     { value: 'light', label: 'Light' },
     { value: 'dark', label: 'Dark' },
     { value: 'system', label: 'System' },
-    ...customThemes.map(name => ({
-      value: name,
-      label: name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
-    }))
+    ...customThemes
+      .filter(name => name !== 'light' && name !== 'dark')
+      .map(name => ({
+        value: name,
+        label: name.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
+      }))
   ];
+
 
   const getBackendHealthStatus = (backendId: string) => {
     const backend = backendStatus.find(b => b.id === backendId);
@@ -193,10 +196,10 @@ export function SettingsPage() {
 
   const getHealthColor = (health: string) => {
     switch (health) {
-      case 'healthy': return 'text-green-500';
-      case 'unhealthy': return 'text-red-500';
-      case 'checking': return 'text-yellow-500';
-      default: return 'text-gray-500';
+      case 'healthy': return 'text-accent-green';
+      case 'unhealthy': return 'text-accent-red';
+      case 'checking': return 'text-accent-yellow';
+      default: return 'text-muted-foreground';
     }
   };
 
@@ -266,7 +269,7 @@ export function SettingsPage() {
             </select>
             <p className="text-sm text-muted-foreground">
               {enabledBackends.length === 0 ? (
-                <span className="text-yellow-500">⚠️ No backends enabled! Please enable at least one backend.</span>
+                <span className="text-accent-yellow">⚠️ No backends enabled! Please enable at least one backend.</span>
               ) : (
                 'If the default backend is unavailable, the system will automatically fall back to the next available backend.'
               )}
@@ -618,9 +621,9 @@ export function SettingsPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-start gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-md">
-            <AlertCircle className="w-4 h-4 text-yellow-500 mt-0.5" />
-            <p className="text-xs text-yellow-500">
+          <div className="flex items-start gap-2 p-3 bg-accent-yellow/10 border border-accent-yellow/30 rounded-md">
+            <AlertCircle className="w-4 h-4 text-accent-yellow mt-0.5" />
+            <p className="text-xs text-accent-yellow">
               <strong>Not Recommended:</strong> Direct download doesn't support advanced features like resume or segmented downloads. 
               Only enable this as a fallback option when other backends are unavailable.
             </p>

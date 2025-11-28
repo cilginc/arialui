@@ -33,19 +33,19 @@ export function DownloadList({ downloads, onPause, onResume, onRemove }: Downloa
                 <h3 className="font-medium truncate" title={item.name}>{item.name}</h3>
                 <div className="flex gap-2">
                   <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                    item.backend === 'aria2' ? 'bg-blue-500/20 text-blue-500' :
-                    item.backend === 'wget2' ? 'bg-purple-500/20 text-purple-500' :
-                    item.backend === 'wget' ? 'bg-orange-500/20 text-orange-500' :
-                    item.backend === 'direct' ? 'bg-cyan-500/20 text-cyan-500' :
-                    'bg-blue-500/20 text-blue-500'
+                    item.backend === 'aria2' ? 'bg-accent-blue/20 text-accent-blue' :
+                    item.backend === 'wget2' ? 'bg-accent-purple/20 text-accent-purple' :
+                    item.backend === 'wget' ? 'bg-accent-orange/20 text-accent-orange' :
+                    item.backend === 'direct' ? 'bg-accent-cyan/20 text-accent-cyan' :
+                    'bg-accent-blue/20 text-accent-blue'
                   }`}>
                     {item.backend || 'aria2'}
                   </span>
                   <span className={`text-xs px-2 py-0.5 rounded-full capitalize ${
                     item.status === 'active' ? 'bg-primary/20 text-primary' :
                     item.status === 'error' ? 'bg-destructive/20 text-destructive' :
-                    item.status === 'complete' ? 'bg-green-500/20 text-green-500' :
-                    item.status === 'paused' ? 'bg-yellow-500/20 text-yellow-500' :
+                    item.status === 'complete' ? 'bg-accent-green/20 text-accent-green' :
+                    item.status === 'paused' ? 'bg-accent-yellow/20 text-accent-yellow' :
                     'bg-secondary text-muted-foreground'
                   }`}>
                     {item.status}
@@ -57,7 +57,7 @@ export function DownloadList({ downloads, onPause, onResume, onRemove }: Downloa
                 <div
                   className={`h-full transition-all duration-500 ${
                     item.status === 'error' ? 'bg-destructive' :
-                    item.status === 'complete' ? 'bg-green-500' :
+                    item.status === 'complete' ? 'bg-accent-green' :
                     'bg-primary'
                   }`}
                   style={{ width: `${item.progress}%` }}

@@ -2,7 +2,7 @@
 version = 1
 name = "Catppuccin Mocha"
 description = "Soothing pastel theme for the high-spirited"
-variant = "dark"
+
 
 [colors.core]
 background = "#1e1e2e"

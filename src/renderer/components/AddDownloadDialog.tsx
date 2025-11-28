@@ -108,11 +108,11 @@ export function AddDownloadDialog({
 
   const getBackendStatusColor = (health: string) => {
     switch (health) {
-      case 'healthy': return 'text-green-500';
-      case 'unhealthy': return 'text-red-500';
-      case 'disabled': return 'text-gray-500';
-      case 'checking': return 'text-yellow-500';
-      default: return 'text-gray-500';
+      case 'healthy': return 'text-accent-green';
+      case 'unhealthy': return 'text-accent-red';
+      case 'disabled': return 'text-muted-foreground';
+      case 'checking': return 'text-accent-yellow';
+      default: return 'text-muted-foreground';
     }
   };
 
@@ -163,9 +163,9 @@ export function AddDownloadDialog({
             </select>
             
             {backends.find(b => b.id === selectedBackend)?.id === 'direct' && (
-              <div className="flex items-start gap-2 p-3 bg-yellow-500/10 border border-yellow-500/30 rounded-md">
-                <AlertCircle className="w-4 h-4 text-yellow-500 mt-0.5" />
-                <p className="text-xs text-yellow-500">
+              <div className="flex items-start gap-2 p-3 bg-accent-yellow/10 border border-accent-yellow/30 rounded-md">
+                <AlertCircle className="w-4 h-4 text-accent-yellow mt-0.5" />
+                <p className="text-xs text-accent-yellow">
                   <strong>Not Recommended:</strong> Direct download doesn't support advanced features like resume or segmented downloads. 
                   Only use when other backends are unavailable.
                 </p>
