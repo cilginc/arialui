@@ -13,7 +13,7 @@ import { TitleBar } from './components/TitleBar';
 
 function App() {
   const [activeTab,setActiveTab] = useState('all');
-  const [version, setVersion] = useState<string>('');
+  // const [version, setVersion] = useState<string>('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [initialUrl, setInitialUrl] = useState<string>('');
   const [initialBackend, setInitialBackend] = useState<string>();
@@ -24,19 +24,30 @@ function App() {
 
   const { downloads, refresh, pauseDownload, resumeDownload, removeDownload } = useDownloads(client);
 
+
+
   useEffect(() => {
     const initAria2 = async () => {
       try {
         const config = await window.electronAPI.getAria2Config();
         const c = new Aria2Client(config);
         setClient(c);
-        const v = await c.getVersion();
-        setVersion(v.version);
+        // const v = await c.getVersion();
+        // setVersion(v.version);
       } catch (err) {
         console.error(err);
       }
     };
     initAria2();
+
+    const loadBackendStatus = async () => {
+      try {
+        const status = await window.electronAPI.getBackendStatus();
+        setBackendStatus(status);
+      } catch (error) {
+        console.error('[APP] Failed to load backend status:', error);
+      }
+    };
 
     // Load initial backend status
     loadBackendStatus();
@@ -57,14 +68,7 @@ function App() {
     });
   }, []);
 
-  const loadBackendStatus = async () => {
-    try {
-      const status = await window.electronAPI.getBackendStatus();
-      setBackendStatus(status);
-    } catch (error) {
-      console.error('[APP] Failed to load backend status:', error);
-    }
-  };
+
 
   const handleAddDownload = useCallback(async (
     url: string, 
@@ -79,6 +83,7 @@ function App() {
     try {
       // For aria2, use the direct client for better UI integration
       if (selectedBackend === 'aria2' && client) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const aria2Options: any = {};
         if (options?.cookies) aria2Options.header = [`Cookie: ${options.cookies}`];
         if (options?.userAgent) aria2Options['user-agent'] = options.userAgent;

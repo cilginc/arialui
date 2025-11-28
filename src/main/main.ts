@@ -1,7 +1,10 @@
 import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, Notification } from 'electron';
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 if (require('electron-squirrel-startup')) app.quit();
 import path from 'path';
+import fs from 'fs';
 import http from 'http';
+import { BackendType } from './backend-manager';
 import { getAria2Config } from './aria2';
 import { initializeConfig, getConfigManager } from './config';
 import { getBackendManager } from './backend-manager';
@@ -146,6 +149,7 @@ function createWindow() {
   }
 
   mainWindow.on('close', (event) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!(app as any).isQuitting) {
       event.preventDefault();
       mainWindow?.hide();
@@ -214,10 +218,12 @@ app.whenReady().then(async () => {
     return getBackendManager().getDefaultBackend();
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ipcMain.handle('add-download-with-backend', async (_event, backendId: string, url: string, options: any) => {
     try {
-      const downloadId = await getBackendManager().addDownload(backendId as any, url, options);
+      const downloadId = await getBackendManager().addDownload(backendId as BackendType, url, options);
       return { success: true, downloadId };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       console.error('[MAIN] Failed to add download:', error);
       return { success: false, error: error.message };
@@ -234,13 +240,13 @@ app.whenReady().then(async () => {
   });
 
   ipcMain.handle('check-file-exists', (_event, filePath: string) => {
-    return require('fs').existsSync(filePath);
+    return fs.existsSync(filePath);
   });
 
   ipcMain.handle('delete-file', (_event, filePath: string) => {
     try {
-      if (require('fs').existsSync(filePath)) {
-        require('fs').unlinkSync(filePath);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
         return true;
       }
       return false;
@@ -299,6 +305,7 @@ app.whenReady().then(async () => {
 });
 
 app.on('before-quit', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (app as any).isQuitting = true;
 });
 

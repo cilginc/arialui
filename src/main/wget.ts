@@ -1,4 +1,4 @@
-import { spawn, ChildProcess } from 'child_process';
+import { spawn } from 'child_process';
 import { getConfigManager } from './config';
 import { Backend, BackendHealth, BackendType, DownloadOptions } from './backend-manager';
 import { exec } from 'child_process';

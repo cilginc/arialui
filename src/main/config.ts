@@ -202,6 +202,7 @@ class ConfigManager {
 
   public async save(): Promise<void> {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const tomlString = TOML.stringify(this.config as any);
       fs.writeFileSync(this.configPath, tomlString, 'utf-8');
       console.log('Configuration saved to:', this.configPath);
@@ -279,9 +280,11 @@ class ConfigManager {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private migrateConfigToV2(oldConfig: any): AppConfig {
     // If old config has aria2 at root level, migrate to backends structure
     if (oldConfig.aria2 && !oldConfig.backends) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const migratedConfig: any = {
         ...oldConfig,
         version: 2,
@@ -307,6 +310,7 @@ class ConfigManager {
     return this.deepMerge(DEFAULT_CONFIG, config) as AppConfig;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private deepMerge(target: any, source: any): any {
     const result = { ...target };
     for (const key in source) {

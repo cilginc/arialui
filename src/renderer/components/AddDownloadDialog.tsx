@@ -32,43 +32,48 @@ export function AddDownloadDialog({
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const hasAutoSubmittedRef = useRef<string>('');
 
+
+
   // Load backends when dialog opens
   useEffect(() => {
+    const loadBackends = async () => {
+      try {
+        const [backendStatus, defBackend] = await Promise.all([
+          window.electronAPI.getBackendStatus(),
+          window.electronAPI.getDefaultBackend()
+        ]);
+        
+        setBackends(backendStatus);
+        setDefaultBackend(defBackend);
+        
+        // Set initial selection
+        if (initialBackend) {
+          setSelectedBackend(initialBackend as BackendType);
+        } else if (defBackend) {
+          setSelectedBackend(defBackend);
+        } else {
+          // Fallback to first healthy backend
+          const healthy = backendStatus.find(b => b.enabled && b.health === 'healthy');
+          if (healthy) {
+            setSelectedBackend(healthy.id);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load backends:', error);
+      }
+    };
+
     if (open) {
       loadBackends();
     }
-  }, [open]);
+  }, [open, initialBackend]);
 
-  const loadBackends = async () => {
-    try {
-      const [backendStatus, defBackend] = await Promise.all([
-        window.electronAPI.getBackendStatus(),
-        window.electronAPI.getDefaultBackend()
-      ]);
-      
-      setBackends(backendStatus);
-      setDefaultBackend(defBackend);
-      
-      // Set initial selection
-      if (initialBackend) {
-        setSelectedBackend(initialBackend as BackendType);
-      } else if (defBackend) {
-        setSelectedBackend(defBackend);
-      } else {
-        // Fallback to first healthy backend
-        const healthy = backendStatus.find(b => b.enabled && b.health === 'healthy');
-        if (healthy) {
-          setSelectedBackend(healthy.id);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to load backends:', error);
-    }
-  };
+
 
   // Update URL when initialUrl changes
   useEffect(() => {
     if (initialUrl) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setUrl(initialUrl);
       hasAutoSubmittedRef.current = '';
     }

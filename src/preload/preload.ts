@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   close: () => ipcRenderer.send('window-close'),
   // Configuration methods
   getConfig: () => ipcRenderer.invoke('get-config'),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   updateConfig: (updates: any) => ipcRenderer.invoke('update-config', updates),
   getCustomThemes: () => ipcRenderer.invoke('get-custom-themes'),
   loadCustomTheme: (themeName: string) => ipcRenderer.invoke('load-custom-theme', themeName),
@@ -21,8 +22,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getBackendStatus: () => ipcRenderer.invoke('get-backend-status'),
   getAvailableBackends: () => ipcRenderer.invoke('get-available-backends'),
   getDefaultBackend: () => ipcRenderer.invoke('get-default-backend'),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   addDownloadWithBackend: (backendId: string, url: string, options?: any) => 
     ipcRenderer.invoke('add-download-with-backend', backendId, url, options),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onBackendStatusChanged: (callback: (status: any[]) => void) => {
     ipcRenderer.removeAllListeners('backend-status-changed');
     ipcRenderer.on('backend-status-changed', (_event, status) => callback(status));

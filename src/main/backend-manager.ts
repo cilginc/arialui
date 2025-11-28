@@ -110,7 +110,7 @@ export class BackendManager {
   }
 
   public getBackendStatus(): BackendStatus[] {
-    const config = getConfigManager().getConfig();
+    // const config = getConfigManager().getConfig();
     const statuses: BackendStatus[] = [];
 
     for (const [id, backend] of this.backends.entries()) {

@@ -17,83 +17,85 @@ export interface DownloadItem {
   backend?: 'aria2' | 'wget2' | 'wget' | 'direct';
 }
 
+const formatSize = (bytes: number) => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+
+const formatSpeed = (bytesPerSec: number) => {
+  return formatSize(bytesPerSec) + '/s';
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const mapAria2Item = (item: any): DownloadItem => {
+  const totalLength = parseInt(item.totalLength);
+  const completedLength = parseInt(item.completedLength);
+  const downloadSpeed = parseInt(item.downloadSpeed);
+  
+  let progress = 0;
+  if (totalLength > 0) {
+    progress = (completedLength / totalLength) * 100;
+  }
+
+  // Determine name and fullPath
+  let name = 'Unknown';
+  let fullPath = undefined;
+
+  if (item.bittorrent && item.bittorrent.info && item.bittorrent.info.name) {
+    name = item.bittorrent.info.name;
+  } else if (item.files && item.files.length > 0) {
+    const filePath = item.files[0].path;
+    if (filePath) {
+      fullPath = filePath;
+      name = filePath.split(/[/\\]/).pop() || 'Unknown';
+    } else if (item.files[0].uris && item.files[0].uris.length > 0) {
+      name = item.files[0].uris[0].uri.split('/').pop() || 'Unknown';
+    }
+  }
+
+  return {
+    gid: item.gid,
+    name,
+    status: item.status,
+    progress,
+    speed: formatSpeed(downloadSpeed),
+    size: formatSize(totalLength),
+    totalLength,
+    completedLength,
+    downloadSpeed,
+    dir: item.dir,
+    fullPath,
+    backend: 'aria2',
+  };
+};
+
+const mapTrackedItem = (item: TrackedDownload): DownloadItem => {
+  const speed = item.status === 'active' && item.speed > 0 ? item.speed : 0;
+  
+  return {
+    gid: item.id,
+    name: item.filename,
+    status: item.status,
+    progress: item.progress,
+    speed: formatSpeed(speed),
+    size: formatSize(item.totalBytes),
+    totalLength: item.totalBytes,
+    completedLength: item.downloadedBytes,
+    downloadSpeed: speed,
+    dir: item.savePath || '',
+    fullPath: item.savePath,
+    backend: item.backend,
+  };
+};
+
 export function useDownloads(client: Aria2Client | null) {
   const [downloads, setDownloads] = useState<DownloadItem[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [globalStat, setGlobalStat] = useState<any>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const formatSize = (bytes: number) => {
-    if (bytes === 0) return '0 B';
-    const k = 1024;
-    const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const formatSpeed = (bytesPerSec: number) => {
-    return formatSize(bytesPerSec) + '/s';
-  };
-
-  const mapAria2Item = (item: any): DownloadItem => {
-    const totalLength = parseInt(item.totalLength);
-    const completedLength = parseInt(item.completedLength);
-    const downloadSpeed = parseInt(item.downloadSpeed);
-    
-    let progress = 0;
-    if (totalLength > 0) {
-      progress = (completedLength / totalLength) * 100;
-    }
-
-    // Determine name and fullPath
-    let name = 'Unknown';
-    let fullPath = undefined;
-
-    if (item.bittorrent && item.bittorrent.info && item.bittorrent.info.name) {
-      name = item.bittorrent.info.name;
-    } else if (item.files && item.files.length > 0) {
-      const filePath = item.files[0].path;
-      if (filePath) {
-        fullPath = filePath;
-        name = filePath.split(/[/\\]/).pop() || 'Unknown';
-      } else if (item.files[0].uris && item.files[0].uris.length > 0) {
-        name = item.files[0].uris[0].uri.split('/').pop() || 'Unknown';
-      }
-    }
-
-    return {
-      gid: item.gid,
-      name,
-      status: item.status,
-      progress,
-      speed: formatSpeed(downloadSpeed),
-      size: formatSize(totalLength),
-      totalLength,
-      completedLength,
-      downloadSpeed,
-      dir: item.dir,
-      fullPath,
-      backend: 'aria2',
-    };
-  };
-
-  const mapTrackedItem = (item: TrackedDownload): DownloadItem => {
-    const speed = item.status === 'active' && item.speed > 0 ? item.speed : 0;
-    
-    return {
-      gid: item.id,
-      name: item.filename,
-      status: item.status,
-      progress: item.progress,
-      speed: formatSpeed(speed),
-      size: formatSize(item.totalBytes),
-      totalLength: item.totalBytes,
-      completedLength: item.downloadedBytes,
-      downloadSpeed: speed,
-      dir: item.savePath || '',
-      fullPath: item.savePath,
-      backend: item.backend,
-    };
-  };
 
   const fetchDownloads = useCallback(async () => {
     if (!client) return;
@@ -127,6 +129,7 @@ export function useDownloads(client: Aria2Client | null) {
 
   useEffect(() => {
     if (client) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchDownloads();
       intervalRef.current = setInterval(fetchDownloads, 1000);
     }

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react"
 import { applyTheme, clearCustomTheme } from "@/lib/themes"
-import type { AppConfig } from "../../main/config"
+// import type { AppConfig } from "../../main/config"
 
 type Theme = "dark" | "light" | "system" | "custom" | string
 
@@ -26,7 +26,7 @@ const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 export function ThemeProvider({
   children,
   defaultTheme = "dark",
-  storageKey = "arialui-theme",
+  // storageKey = "arialui-theme",
   ...props
 }: ThemeProviderProps) {
   const [theme, setThemeState] = useState<Theme>(defaultTheme)
@@ -154,6 +154,7 @@ export function ThemeProvider({
   )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => {
   const context = useContext(ThemeProviderContext)
 

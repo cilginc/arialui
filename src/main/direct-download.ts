@@ -1,4 +1,4 @@
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, DownloadItem, Event } from 'electron';
 import { getConfigManager } from './config';
 import { Backend, BackendHealth, BackendType, DownloadOptions } from './backend-manager';
 import { getDownloadTracker, TrackedDownload } from './download-tracker';
@@ -42,6 +42,7 @@ export class DirectBackend implements Backend {
     return 'healthy';
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   public async addDownload(url: string, options?: DownloadOptions): Promise<string> {
     if (!this.mainWindow) {
       throw new Error('Main window not available for direct download');
@@ -55,7 +56,7 @@ export class DirectBackend implements Backend {
       this.mainWindow!.webContents.downloadURL(url);
 
       // Listen for the download to start
-      const downloadHandler = (event: any, item: any, webContents: any) => {
+      const downloadHandler = (event: Event, item: DownloadItem) => {
         const downloadId = `direct-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         
         // Set download path
@@ -86,7 +87,7 @@ export class DirectBackend implements Backend {
         let lastBytes = 0;
         let lastTime = Date.now();
 
-        item.on('updated', (event: any, state: string) => {
+        item.on('updated', (event: Event, state: string) => {
           if (state === 'interrupted') {
             console.log('[DirectBackend] Download interrupted');
             tracker.updateDownload(downloadId, { status: 'error', error: 'Download interrupted', speed: 0 });
@@ -128,7 +129,7 @@ export class DirectBackend implements Backend {
           }
         });
 
-        item.once('done', (event: any, state: string) => {
+        item.once('done', (event: Event, state: string) => {
           if (state === 'completed') {
             console.log('[DirectBackend] Download completed successfully');
             tracker.updateDownload(downloadId, {

@@ -13,6 +13,7 @@ export class Aria2Client {
     this.secret = config.secret;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async call(method: string, params: any[] = []) {
     const payload = {
       jsonrpc: '2.0',
@@ -40,6 +41,7 @@ export class Aria2Client {
     return this.call('getVersion');
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async addUri(uris: string[], options: any = {}) {
     return this.call('addUri', [uris, options]);
   }

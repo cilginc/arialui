@@ -228,6 +228,7 @@ export function SettingsPage() {
                 <Button
                   key={option.value}
                   variant={theme === option.value ? 'default' : 'outline'}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   onClick={() => setTheme(option.value as any)}
                   className="relative"
                 >
@@ -258,6 +259,7 @@ export function SettingsPage() {
             <select
               id="default-backend"
               value={defaultBackend}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               onChange={(e) => setDefaultBackend(e.target.value as any)}
               className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
             >

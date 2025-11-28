@@ -1,4 +1,4 @@
-import { spawn, ChildProcess } from 'child_process';
+import { spawn } from 'child_process';
 import { getConfigManager } from './config';
 import { Backend, BackendHealth, BackendType, DownloadOptions } from './backend-manager';
 import { exec } from 'child_process';
@@ -61,7 +61,7 @@ export class Wget2Backend implements Backend {
       if (extracted) {
         filename = extracted;
       }
-    } catch (e) {
+    } catch {
       // Invalid URL, keep default
     }
 
@@ -131,6 +131,7 @@ export class Wget2Backend implements Backend {
         // Strip ANSI escape codes
         // eslint-disable-next-line no-control-regex
         line = line.replace(/[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '');
+        // eslint-disable-next-line no-control-regex
         line = line.replace(/\u001b[78]/g, ''); // Strip save/restore cursor codes
         line = line.trim();
 
@@ -199,7 +200,7 @@ export class Wget2Backend implements Backend {
       }
     });
 
-    process.stderr?.on('data', (data) => {
+    process.stderr?.on('data', () => {
       // Log stderr for errors, but don't parse progress from it anymore
       // console.error(`[Wget2Backend] stderr: ${data}`);
     });

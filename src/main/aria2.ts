@@ -132,7 +132,7 @@ export class Aria2Backend implements Backend {
     const config = getConfigManager().getConfig();
     const aria2Config = config.backends.aria2;
 
-    const aria2Options: any = {};
+    const aria2Options: Record<string, string | string[]> = {};
     
     if (options?.cookies) {
       aria2Options.header = [`Cookie: ${options.cookies}`];
@@ -146,7 +146,7 @@ export class Aria2Backend implements Backend {
       if (!aria2Options.header) {
         aria2Options.header = [];
       }
-      aria2Options.header.push(`Referer: ${options.referrer}`);
+      (aria2Options.header as string[]).push(`Referer: ${options.referrer}`);
     }
 
     return new Promise((resolve, reject) => {
