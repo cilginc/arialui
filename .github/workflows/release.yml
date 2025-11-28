@@ -155,16 +155,6 @@ jobs:
         run: |
           find artifacts -type f \( -name "*.exe" -o -name "*.deb" -o -name "*.rpm" -o -name "*.zip" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.sha256" \) -exec cp {} release-assets/ \;
 
-      - name: Generate combined SHA256 checksums file
-        shell: bash
-        working-directory: release-assets
-        run: |
-          echo "# SHA256 Checksums for AriaLUI ${{ needs.release.outputs.version }}" > SHA256SUMS.txt
-          echo "" >> SHA256SUMS.txt
-          for file in *.exe *.deb *.rpm *.zip *.dmg *.AppImage 2>/dev/null; do
-            [ -f "$file" ] && sha256sum "$file" >> SHA256SUMS.txt
-          done
-
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
