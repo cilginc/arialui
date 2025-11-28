@@ -50,6 +50,7 @@ module.exports = {
         options: {
           name: "arialui",
           productName: "AriaLUI",
+          bin: "AriaLUI",
           genericName: "Download Manager",
           description:
             "An IDM like Download Manager with Different Backends support",
@@ -68,6 +69,7 @@ module.exports = {
         options: {
           name: "arialui",
           productName: "AriaLUI",
+          bin: "AriaLUI",
           genericName: "Download Manager",
           description:
             "An IDM like Download Manager with Different Backends support",
