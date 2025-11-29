@@ -47,6 +47,7 @@ export function SettingsPage() {
   const [defaultBackend, setDefaultBackend] = useState<'aria2' | 'wget2' | 'wget' | 'direct'>('aria2');
   const [downloadDirectory, setDownloadDirectory] = useState('');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [autostart, setAutostart] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
@@ -93,6 +94,7 @@ export function SettingsPage() {
         setDefaultBackend(cfg.defaultBackend);
         setDownloadDirectory(cfg.general.downloadDirectory);
         setNotificationsEnabled(cfg.general.notificationsEnabled ?? true);
+        setAutostart(cfg.general.autostart ?? false);
 
         // Load custom themes
         const themes = await window.electronAPI.getCustomThemes();
@@ -157,6 +159,7 @@ export function SettingsPage() {
           ...config.general,
           downloadDirectory,
           notificationsEnabled,
+          autostart,
         },
       };
 
@@ -308,6 +311,17 @@ export function SettingsPage() {
               className="w-4 h-4"
             />
             <Label htmlFor="notifications-enabled">Enable System Notifications</Label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="autostart"
+              checked={autostart}
+              onChange={(e) => setAutostart(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <Label htmlFor="autostart">Start on system startup</Label>
           </div>
         </CardContent>
       </Card>

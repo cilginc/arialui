@@ -96,6 +96,7 @@ export interface AppConfig {
     startMinimized: boolean;
     closeToTray: boolean;
     notificationsEnabled: boolean;
+    autostart: boolean;
   };
 }
 
@@ -144,6 +145,7 @@ const DEFAULT_CONFIG: AppConfig = {
     startMinimized: false,
     closeToTray: true,
     notificationsEnabled: true,
+    autostart: false,
   },
 };
 

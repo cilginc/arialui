@@ -13,6 +13,7 @@ import { Wget2Backend } from './wget2';
 import { WgetBackend } from './wget';
 import { DirectBackend } from './direct-download';
 import { getDownloadTracker } from './download-tracker';
+import { setupAutostart } from './autostart';
 
 let tray: Tray | null = null;
 let mainWindow: BrowserWindow | null = null;
@@ -166,6 +167,10 @@ app.whenReady().then(async () => {
   // Initialize configuration
   await initializeConfig();
   
+  // Apply autostart setting
+  const config = getConfigManager().getConfig();
+  setupAutostart(config.general.autostart);
+  
   // Initialize backend manager
   const backendManager = getBackendManager();
   
@@ -184,9 +189,16 @@ app.whenReady().then(async () => {
 
   ipcMain.handle('update-config', async (_event, updates) => {
     const configManager = getConfigManager();
+    const oldConfig = configManager.getConfig();
     configManager.updateConfig(updates);
     await configManager.save();
-    return configManager.getConfig();
+    
+    const newConfig = configManager.getConfig();
+    if (oldConfig.general.autostart !== newConfig.general.autostart) {
+      setupAutostart(newConfig.general.autostart);
+    }
+    
+    return newConfig;
   });
 
   ipcMain.handle('get-custom-themes', () => {
