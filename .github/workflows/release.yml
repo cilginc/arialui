@@ -62,7 +62,7 @@ jobs:
             platform: windows
           - os: macos-latest
             platform: macos-arm64
-          - os: macos-13
+          - os: macos-15
             platform: macos-x64
 
     steps:
