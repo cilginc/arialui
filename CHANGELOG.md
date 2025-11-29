@@ -1,3 +1,10 @@
+## [0.3.1](https://github.com/cilginc/arialui/compare/v0.3.0...v0.3.1) (2025-11-29)
+
+
+### Bug Fixes
+
+* installed required deps for semantic release ([6860303](https://github.com/cilginc/arialui/commit/6860303fe0a57882f731327bf08bcfcf0420a6e6))
+
 # [0.3.0](https://github.com/cilginc/arialui/compare/v0.2.0...v0.3.0) (2025-11-29)
 
 
