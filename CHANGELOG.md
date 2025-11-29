@@ -1,3 +1,10 @@
+# [0.3.0](https://github.com/cilginc/arialui/compare/v0.2.0...v0.3.0) (2025-11-29)
+
+
+### Features
+
+* added auto updates with update-electron-app ([32d5cd0](https://github.com/cilginc/arialui/commit/32d5cd02695b4d9e3175f537d876d2fd9cd80534))
+
 # [0.2.0](https://github.com/cilginc/arialui/compare/v0.1.0...v0.2.0) (2025-11-29)
 
 
