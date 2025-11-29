@@ -6,7 +6,7 @@ module.exports = {
   packagerConfig: {
     name: "AriaLUI",
     executableName: "AriaLUI",
-    icon: path.resolve(__dirname, "resources/icon.ico"),
+    icon: path.resolve(__dirname, "resources/icon"),
     asar: true,
     ignore: [
       /^\/src/, // Ignore source files
@@ -38,10 +38,14 @@ module.exports = {
         setupExe: `AriaLUI-${require("./package.json").version}-Setup.exe`,
       },
     },
-    // macOS ZIP (for direct download)
+    // macOS DMG Installer
     {
-      name: "@electron-forge/maker-zip",
-      platforms: ["darwin"],
+      name: "@electron-forge/maker-dmg",
+      config: {
+        format: "ULFO",
+        icon: path.resolve(__dirname, "resources/icon.icns"),
+        name: "AriaLUI",
+      },
     },
     // Linux Debian Package
     {
