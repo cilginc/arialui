@@ -1,6 +1,8 @@
 import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, Notification } from 'electron';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 if (require('electron-squirrel-startup')) app.quit();
+import { updateElectronApp } from 'update-electron-app';
+updateElectronApp();
 import path from 'path';
 import fs from 'fs';
 import http from 'http';
