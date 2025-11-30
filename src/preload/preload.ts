@@ -39,4 +39,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   deleteFile: (path: string) => ipcRenderer.invoke('delete-file', path),
   // Notification
   showNotification: (title: string, body: string) => ipcRenderer.invoke('show-notification', { title, body }),
+  // Update check
+  checkForUpdates: () => ipcRenderer.invoke('check-for-updates'),
+  // App info
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
 });

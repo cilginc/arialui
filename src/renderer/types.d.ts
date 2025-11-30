@@ -76,6 +76,12 @@ export interface IElectronAPI {
   
   // Notification
   showNotification: (title: string, body: string) => Promise<void>;
+  
+  // Update check
+  checkForUpdates: () => Promise<{ success: boolean; message: string }>;
+  
+  // App info
+  getAppVersion: () => Promise<string>;
 }
 
 declare global {
