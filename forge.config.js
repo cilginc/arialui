@@ -94,7 +94,7 @@ module.exports = {
           name: "arialui",
         },
         prerelease: false,
-        draft: true,
+        draft: false,
       },
     },
   ],
