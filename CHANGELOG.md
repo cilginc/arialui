@@ -1,3 +1,10 @@
+## [0.3.2](https://github.com/cilginc/arialui/compare/v0.3.1...v0.3.2) (2025-11-30)
+
+
+### Bug Fixes
+
+* auto updates ([0f8328e](https://github.com/cilginc/arialui/commit/0f8328e069a759f92286da099ee4fd22354567e8))
+
 ## [0.3.1](https://github.com/cilginc/arialui/compare/v0.3.0...v0.3.1) (2025-11-29)
 
 
