@@ -2,7 +2,6 @@ import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, Notification } fr
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 if (require('electron-squirrel-startup')) app.quit();
 import { updateElectronApp } from 'update-electron-app';
-updateElectronApp();
 import path from 'path';
 import fs from 'fs';
 import http from 'http';
@@ -166,6 +165,14 @@ function createWindow() {
 }
 
 app.whenReady().then(async () => {
+  // Initialize auto-updater
+  // Check for updates at startup and every 10 minutes
+  updateElectronApp({
+    repo: 'cilginc/arialui',
+    updateInterval: '10 minutes',
+    logger: console
+  });
+  
   // Initialize configuration
   await initializeConfig();
   
