@@ -1,0 +1,118 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "AriaLUI Configuration",
+  "type": "object",
+  "properties": {
+    "version": {
+      "type": "integer",
+      "description": "Configuration version"
+    },
+    "theme": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["light", "dark", "system", "custom"],
+          "description": "Theme mode"
+        },
+        "customThemeName": {
+          "type": "string",
+          "description": "Name of the custom theme to use"
+        }
+      },
+      "required": ["mode"]
+    },
+    "defaultBackend": {
+      "type": "string",
+      "enum": ["aria2", "wget2", "wget", "direct"],
+      "description": "Default download backend"
+    },
+    "general": {
+      "type": "object",
+      "properties": {
+        "downloadDirectory": {
+          "type": "string",
+          "description": "Default download directory"
+        },
+        "startMinimized": {
+          "type": "boolean",
+          "description": "Start application minimized"
+        },
+        "closeBehavior": {
+          "type": "string",
+          "enum": ["minimize-to-tray", "close"],
+          "description": "Action to take when the close button is clicked",
+          "default": "minimize-to-tray"
+        },
+        "notificationsEnabled": {
+          "type": "boolean",
+          "description": "Enable system notifications"
+        },
+        "autostart": {
+          "type": "boolean",
+          "description": "Start application on system startup"
+        },
+        "autoUpdate": {
+          "type": "boolean",
+          "description": "Enable automatic updates"
+        }
+      },
+      "required": ["downloadDirectory"]
+    },
+    "backends": {
+      "type": "object",
+      "properties": {
+        "aria2": { "$ref": "#/definitions/Aria2Config" },
+        "wget2": { "$ref": "#/definitions/Wget2Config" },
+        "wget": { "$ref": "#/definitions/WgetConfig" },
+        "direct": { "$ref": "#/definitions/DirectConfig" }
+      }
+    }
+  },
+  "definitions": {
+    "Aria2Config": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "port": { "type": "integer" },
+        "secret": { "type": "string" },
+        "rpcListenAll": { "type": "boolean" },
+        "rpcAllowOriginAll": { "type": "boolean" },
+        "maxConcurrentDownloads": { "type": "integer" },
+        "maxConnectionPerServer": { "type": "integer" },
+        "minSplitSize": { "type": "string" },
+        "split": { "type": "integer" },
+        "downloadDir": { "type": "string" }
+      }
+    },
+    "Wget2Config": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "maxConcurrentDownloads": { "type": "integer" },
+        "maxConnectionPerServer": { "type": "integer" },
+        "timeout": { "type": "integer" },
+        "retries": { "type": "integer" },
+        "downloadDir": { "type": "string" }
+      }
+    },
+    "WgetConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "maxConcurrentDownloads": { "type": "integer" },
+        "maxConnectionPerServer": { "type": "integer" },
+        "timeout": { "type": "integer" },
+        "retries": { "type": "integer" },
+        "downloadDir": { "type": "string" }
+      }
+    },
+    "DirectConfig": {
+      "type": "object",
+      "properties": {
+        "enabled": { "type": "boolean" },
+        "downloadDir": { "type": "string" }
+      }
+    }
+  }
+}

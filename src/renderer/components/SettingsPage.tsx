@@ -46,6 +46,7 @@ export function SettingsPage() {
   // General settings
   const [defaultBackend, setDefaultBackend] = useState<'aria2' | 'wget2' | 'wget' | 'direct'>('aria2');
   const [downloadDirectory, setDownloadDirectory] = useState('');
+  const [closeBehavior, setCloseBehavior] = useState<'minimize-to-tray' | 'close'>('minimize-to-tray');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [autostart, setAutostart] = useState(false);
   const [autoUpdate, setAutoUpdate] = useState(true);
@@ -96,6 +97,7 @@ export function SettingsPage() {
         
         setDefaultBackend(cfg.defaultBackend);
         setDownloadDirectory(cfg.general.downloadDirectory);
+        setCloseBehavior(cfg.general.closeBehavior ?? 'minimize-to-tray');
         setNotificationsEnabled(cfg.general.notificationsEnabled ?? true);
         setAutostart(cfg.general.autostart ?? false);
         setAutoUpdate(cfg.general.autoUpdate ?? true);
@@ -166,6 +168,7 @@ export function SettingsPage() {
         general: {
           ...config.general,
           downloadDirectory,
+          closeBehavior,
           notificationsEnabled,
           autostart,
           autoUpdate,
@@ -309,6 +312,23 @@ export function SettingsPage() {
               />
               <Button variant="outline" disabled>Browse</Button>
             </div>
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="close-behavior">Close Button Action</Label>
+            <select
+              id="close-behavior"
+              value={closeBehavior}
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              onChange={(e) => setCloseBehavior(e.target.value as any)}
+              className="flex h-10 w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+            >
+              <option value="minimize-to-tray">Minimize to Tray</option>
+              <option value="close">Close Application</option>
+            </select>
+            <p className="text-sm text-muted-foreground">
+              Choose what happens when you click the close button on the window.
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
