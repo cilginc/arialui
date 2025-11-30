@@ -164,32 +164,50 @@ function createWindow() {
   });
 }
 
-app.whenReady().then(async () => {
-  // Initialize auto-updater
-  // Check for updates at startup and every 10 minutes
-  updateElectronApp({
-    repo: 'cilginc/arialui',
-    updateInterval: '10 minutes',
-    logger: console
+// Single instance lock - prevent multiple instances of the app
+const gotTheLock = app.requestSingleInstanceLock();
+
+if (!gotTheLock) {
+  // Another instance is already running, quit this one
+  app.quit();
+} else {
+  // This is the first instance, listen for second-instance events
+  app.on('second-instance', () => {
+    // Someone tried to run a second instance, focus our window instead
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.show();
+      mainWindow.focus();
+    }
   });
-  
-  // Initialize configuration
-  await initializeConfig();
-  
-  // Apply autostart setting
-  const config = getConfigManager().getConfig();
-  setupAutostart(config.general.autostart);
-  
-  // Initialize backend manager
-  const backendManager = getBackendManager();
-  
-  // Register backends
-  backendManager.registerBackend(new Aria2Backend());
-  backendManager.registerBackend(new Wget2Backend());
-  backendManager.registerBackend(new WgetBackend());
-  // Direct backend will be registered after window is created
-  
-  startExtensionServer();
+
+  // Only initialize the app if we got the lock
+  app.whenReady().then(async () => {
+    // Initialize auto-updater
+    // Check for updates at startup and every 10 minutes
+    updateElectronApp({
+      repo: 'cilginc/arialui',
+      updateInterval: '10 minutes',
+      logger: console
+    });
+    
+    // Initialize configuration
+    await initializeConfig();
+    
+    // Apply autostart setting
+    const config = getConfigManager().getConfig();
+    setupAutostart(config.general.autostart);
+    
+    // Initialize backend manager
+    const backendManager = getBackendManager();
+    
+    // Register backends
+    backendManager.registerBackend(new Aria2Backend());
+    backendManager.registerBackend(new Wget2Backend());
+    backendManager.registerBackend(new WgetBackend());
+    // Direct backend will be registered after window is created
+    
+    startExtensionServer();
 
   // Configuration IPC handlers
   ipcMain.handle('get-config', () => {
@@ -323,18 +341,21 @@ app.whenReady().then(async () => {
   app.on('activate', function () {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
-});
 
-app.on('before-quit', () => {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (app as any).isQuitting = true;
-});
+  app.on('before-quit', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (app as any).isQuitting = true;
+  });
 
-app.on('will-quit', async () => {
-  await getBackendManager().stop();
-});
+  app.on('will-quit', async () => {
+    await getBackendManager().stop();
+  });
 
-app.on('window-all-closed', function () {
-  // Do not quit on window close, as we have tray
-  // if (process.platform !== 'darwin') app.quit();
-});
+  app.on('window-all-closed', function () {
+    // Do not quit on window close, as we have tray
+    // if (process.platform !== 'darwin') app.quit();
+  });
+  }); // End of app.whenReady().then()
+} // End of else block (got the lock)
+
+
