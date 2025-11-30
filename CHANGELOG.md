@@ -1,3 +1,10 @@
+## [0.3.4](https://github.com/cilginc/arialui/compare/v0.3.3...v0.3.4) (2025-11-30)
+
+
+### Bug Fixes
+
+* maked auto updating opt-in ([ca14055](https://github.com/cilginc/arialui/commit/ca14055dac8b27d130a9a095b1be2363e616fa95))
+
 ## [0.3.3](https://github.com/cilginc/arialui/compare/v0.3.2...v0.3.3) (2025-11-30)
 
 

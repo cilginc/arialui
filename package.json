@@ -1,6 +1,6 @@
 {
   "name": "arialui",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "An IDM like Download Manager with Different Backends support",
   "main": "dist-electron/main/main.js",
   "scripts": {
