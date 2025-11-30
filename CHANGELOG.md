@@ -1,3 +1,10 @@
+## [0.3.5](https://github.com/cilginc/arialui/compare/v0.3.4...v0.3.5) (2025-11-30)
+
+
+### Bug Fixes
+
+* updated toml config schema ([ad18a24](https://github.com/cilginc/arialui/commit/ad18a2425ba7df3302f68d7d40b35a1dfd00b58b))
+
 ## [0.3.4](https://github.com/cilginc/arialui/compare/v0.3.3...v0.3.4) (2025-11-30)
 
 
