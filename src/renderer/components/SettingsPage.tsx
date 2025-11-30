@@ -48,10 +48,13 @@ export function SettingsPage() {
   const [downloadDirectory, setDownloadDirectory] = useState('');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [autostart, setAutostart] = useState(false);
+  const [autoUpdate, setAutoUpdate] = useState(true);
+  const [isCheckingUpdates, setIsCheckingUpdates] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
 
   const [customThemes, setCustomThemes] = useState<string[]>([]);
+  const [appVersion, setAppVersion] = useState('');
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -95,10 +98,15 @@ export function SettingsPage() {
         setDownloadDirectory(cfg.general.downloadDirectory);
         setNotificationsEnabled(cfg.general.notificationsEnabled ?? true);
         setAutostart(cfg.general.autostart ?? false);
+        setAutoUpdate(cfg.general.autoUpdate ?? true);
 
         // Load custom themes
         const themes = await window.electronAPI.getCustomThemes();
         setCustomThemes(themes);
+        
+        // Load app version
+        const version = await window.electronAPI.getAppVersion();
+        setAppVersion(version);
       } catch (error) {
         console.error('Failed to load config:', error);
       }
@@ -160,6 +168,7 @@ export function SettingsPage() {
           downloadDirectory,
           notificationsEnabled,
           autostart,
+          autoUpdate,
         },
       };
 
@@ -322,6 +331,53 @@ export function SettingsPage() {
               className="w-4 h-4"
             />
             <Label htmlFor="autostart">Start on system startup</Label>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="auto-update"
+              checked={autoUpdate}
+              onChange={(e) => setAutoUpdate(e.target.checked)}
+              className="w-4 h-4"
+            />
+            <Label htmlFor="auto-update">Enable Auto-Updates</Label>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <Label>Manual Update Check</Label>
+            <Button 
+              variant="outline" 
+              onClick={async () => {
+                setIsCheckingUpdates(true);
+                try {
+                  const result = await window.electronAPI.checkForUpdates();
+                  if (result.success) {
+                    setSaveMessage('Update check initiated. Check console for results.');
+                  } else {
+                    setSaveMessage('Failed to check for updates');
+                  }
+                } catch (error) {
+                  console.error('Failed to check for updates:', error);
+                  setSaveMessage('Failed to check for updates');
+                } finally {
+                  setIsCheckingUpdates(false);
+                  setTimeout(() => setSaveMessage(''), 3000);
+                }
+              }}
+              disabled={isCheckingUpdates}
+              className="w-fit"
+            >
+              {isCheckingUpdates ? 'Checking...' : 'Check for Updates'}
+            </Button>
+            <p className="text-sm text-muted-foreground">
+              Manually check for application updates. Works regardless of auto-update setting.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-1 pt-4 border-t border-border">
+            <Label className="text-muted-foreground">Application Version</Label>
+            <p className="text-sm font-mono">{appVersion || 'Loading...'}</p>
           </div>
         </CardContent>
       </Card>

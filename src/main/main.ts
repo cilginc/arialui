@@ -1,7 +1,7 @@
 import { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, Notification } from 'electron';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 if (require('electron-squirrel-startup')) app.quit();
-import { updateElectronApp } from 'update-electron-app';
+import { updateElectronApp, UpdateSourceType } from 'update-electron-app';
 import path from 'path';
 import fs from 'fs';
 import http from 'http';
@@ -183,19 +183,26 @@ if (!gotTheLock) {
 
   // Only initialize the app if we got the lock
   app.whenReady().then(async () => {
-    // Initialize auto-updater
-    // Check for updates at startup and every 10 minutes
-    updateElectronApp({
-      repo: 'cilginc/arialui',
-      updateInterval: '10 minutes',
-      logger: console
-    });
-    
-    // Initialize configuration
+    // Initialize configuration first
     await initializeConfig();
     
-    // Apply autostart setting
+    // Get config to check auto-update setting
     const config = getConfigManager().getConfig();
+    
+    // Initialize auto-updater only if enabled
+    // Check for updates at startup and every 10 minutes
+    if (config.general.autoUpdate) {
+      updateElectronApp({
+        updateSource: {
+          repo: 'cilginc/arialui',
+          type: UpdateSourceType.ElectronPublicUpdateService
+        },
+        updateInterval: '10 minutes',
+        logger: console
+      });
+    }
+    
+    // Apply autostart setting
     setupAutostart(config.general.autostart);
     
     // Initialize backend manager
@@ -320,6 +327,29 @@ if (!gotTheLock) {
 
   ipcMain.on('window-close', () => {
     mainWindow?.close();
+  });
+
+  ipcMain.handle('check-for-updates', async () => {
+    try {
+      // Manually trigger update check
+      updateElectronApp({
+        updateSource: {
+          repo: 'cilginc/arialui',
+          type: UpdateSourceType.ElectronPublicUpdateService
+        },
+        updateInterval: '10 minutes',
+        notifyUser: true,
+        logger: console
+      });
+      return { success: true, message: 'Update check initiated' };
+    } catch (error) {
+      console.error('[MAIN] Failed to check for updates:', error);
+      return { success: false, message: 'Failed to check for updates' };
+    }
+  });
+
+  ipcMain.handle('get-app-version', () => {
+    return app.getVersion();
   });
 
   createWindow();
