@@ -1,3 +1,10 @@
+## [0.3.3](https://github.com/cilginc/arialui/compare/v0.3.2...v0.3.3) (2025-11-30)
+
+
+### Bug Fixes
+
+* added single instance lock ([aa95319](https://github.com/cilginc/arialui/commit/aa95319c3cef0c85ab74aef6142012af0797c1ff))
+
 ## [0.3.2](https://github.com/cilginc/arialui/compare/v0.3.1...v0.3.2) (2025-11-30)
 
 
