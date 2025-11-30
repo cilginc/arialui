@@ -94,7 +94,7 @@ export interface AppConfig {
   general: {
     downloadDirectory: string;
     startMinimized: boolean;
-    closeToTray: boolean;
+    closeBehavior: 'minimize-to-tray' | 'close';
     notificationsEnabled: boolean;
     autostart: boolean;
     autoUpdate: boolean;
@@ -144,7 +144,7 @@ const DEFAULT_CONFIG: AppConfig = {
   general: {
     downloadDirectory: path.join(app.getPath('downloads')),
     startMinimized: false,
-    closeToTray: true,
+    closeBehavior: 'minimize-to-tray',
     notificationsEnabled: true,
     autostart: false,
     autoUpdate: true,
@@ -208,7 +208,8 @@ class ConfigManager {
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const tomlString = TOML.stringify(this.config as any);
-      fs.writeFileSync(this.configPath, tomlString, 'utf-8');
+      const schemaHeader = '#:schema https://raw.githubusercontent.com/cilginc/arialui/main/config.schema.json\n';
+      fs.writeFileSync(this.configPath, schemaHeader + tomlString, 'utf-8');
       console.log('Configuration saved to:', this.configPath);
     } catch (error) {
       console.error('Failed to save configuration:', error);

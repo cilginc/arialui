@@ -153,12 +153,17 @@ function createWindow() {
   mainWindow.on('close', (event) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!(app as any).isQuitting) {
-      event.preventDefault();
-      mainWindow?.hide();
-      new Notification({
-        title: 'AriaLUI',
-        body: 'Application minimized to tray'
-      }).show();
+      const config = getConfigManager().getConfig();
+      
+      if (config.general.closeBehavior === 'minimize-to-tray') {
+        event.preventDefault();
+        mainWindow?.hide();
+        new Notification({
+          title: 'AriaLUI',
+          body: 'Application minimized to tray'
+        }).show();
+      }
+      // If 'close', do nothing and let it close (which will quit app if not on macOS, or handled by window-all-closed)
     }
     return false;
   });
@@ -383,7 +388,7 @@ if (!gotTheLock) {
 
   app.on('window-all-closed', function () {
     // Do not quit on window close, as we have tray
-    // if (process.platform !== 'darwin') app.quit();
+    if (process.platform !== 'darwin') app.quit();
   });
   }); // End of app.whenReady().then()
 } // End of else block (got the lock)
