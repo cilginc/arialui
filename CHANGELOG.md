@@ -1,3 +1,10 @@
+## [0.3.6](https://github.com/cilginc/arialui/compare/v0.3.5...v0.3.6) (2025-12-07)
+
+
+### Bug Fixes
+
+* **chore:** update deps ([2546fd8](https://github.com/cilginc/arialui/commit/2546fd8c5523741d4413ae2826d5064d71d9c0f3))
+
 ## [0.3.5](https://github.com/cilginc/arialui/compare/v0.3.4...v0.3.5) (2025-11-30)
 
 
